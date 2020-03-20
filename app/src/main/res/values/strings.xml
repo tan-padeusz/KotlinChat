@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Kotlin Chat</string>
+    <string name="requestLabelText">BLUETOOTH AND LOCATION ARE NEEDED TO CHAT</string>
+    <string name="requestButtonText">SHOW REQUESTS</string>
+    <string name="searchRoomText">SEARCH ROOM</string>
+    <string name="startRoomText">START ROOM</string>
+    <string name="joinRoomText">JOIN ROOM</string>
+    <string name="sendButtonText">=></string>
+    <string name="greetingLabelText">WELCOME TO KOTLIN CHAT</string>
+</resources>

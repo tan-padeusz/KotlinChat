@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/chat_navigation"
+    app:startDestination="@id/startFragment">
+
+    <fragment
+        android:id="@+id/startFragment"
+        android:name="com.mygamecompany.kotlinchat.fragments.StartFragment"
+        android:label="MainMenu"
+        tools:layout="@layout/fragment_start">
+        <action
+            android:id="@+id/action_startFragment_to_roomFragment"
+            app:destination="@id/roomFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/roomFragment"
+        android:name="com.mygamecompany.kotlinchat.fragments.RoomFragment"
+        android:label="Room"
+        tools:layout="@layout/fragment_room">
+        <action
+            android:id="@+id/action_roomFragment_to_chatFragment"
+            app:destination="@id/chatFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/chatFragment"
+        android:name="com.mygamecompany.kotlinchat.fragments.ChatFragment"
+        android:label="fragment_chat"
+        tools:layout="@layout/fragment_chat" />
+
+</navigation>
