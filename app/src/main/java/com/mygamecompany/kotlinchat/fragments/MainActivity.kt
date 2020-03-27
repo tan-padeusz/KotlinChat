@@ -3,23 +3,15 @@ package com.mygamecompany.kotlinchat.fragments
 import android.app.Activity
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import com.mygamecompany.kotlinchat.R
-import com.mygamecompany.kotlinchat.utilities.Events
-import org.greenrobot.eventbus.EventBus
 import com.mygamecompany.kotlinchat.utilities.MInputMethodManager
 import com.mygamecompany.kotlinchat.utilities.MessageLayoutCreator
-import kotlinx.android.synthetic.main.fragment_chat.*
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
+import timber.log.Timber
 
 class MainActivity : AppCompatActivity()
 {
-    //CONSTANTS
-    private val logTag: String = "KTC_${javaClass.simpleName}"
-
     //VARIABLES
     private lateinit var startFragment: StartFragment
     private lateinit var roomFragment: RoomFragment
@@ -31,7 +23,7 @@ class MainActivity : AppCompatActivity()
     {
         super.onCreate(savedInstanceState)
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Log.d(logTag, "$methodName: ")
+        Timber.d("$methodName: ")
 
         setContentView(R.layout.activity_main)
         initialiseLayoutCreator()
@@ -45,7 +37,7 @@ class MainActivity : AppCompatActivity()
     private fun initialiseLayoutCreator()
     {
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Log.d(logTag, "$methodName: ")
+        Timber.d("$methodName: ")
 
         MessageLayoutCreator.createInstance(this)
         layoutCreator = MessageLayoutCreator.getInstance()
@@ -54,7 +46,7 @@ class MainActivity : AppCompatActivity()
     private fun setInputMethodManager()
     {
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Log.d(logTag, "$methodName: ")
+        Timber.d("$methodName: ")
 
         MInputMethodManager.setInputMethodManager(getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager)
     }
@@ -62,7 +54,7 @@ class MainActivity : AppCompatActivity()
     private fun initialiseFragments()
     {
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Log.d(logTag, "$methodName: ")
+        Timber.d("$methodName: ")
 
         startFragment = StartFragment()
         roomFragment = RoomFragment()
@@ -72,7 +64,7 @@ class MainActivity : AppCompatActivity()
     private fun enableScreenTimeout(enable: Boolean)
     {
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Log.d(logTag, "$methodName: enable: $enable")
+        Timber.d("$methodName: enable: $enable")
 
         with(window)
         {

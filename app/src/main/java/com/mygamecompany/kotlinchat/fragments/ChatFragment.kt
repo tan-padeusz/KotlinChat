@@ -2,14 +2,11 @@ package com.mygamecompany.kotlinchat.fragments
 
 import android.bluetooth.BluetoothAdapter
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
-import android.widget.TextView
-import com.mygamecompany.kotlinchat.R
 import com.mygamecompany.kotlinchat.bluetooth.Client
 import com.mygamecompany.kotlinchat.bluetooth.Server
 import com.mygamecompany.kotlinchat.utilities.CurrentRole
@@ -21,11 +18,11 @@ import com.mygamecompany.kotlinchat.utilities.Events
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import timber.log.Timber
 
 class ChatFragment : Fragment()
 {
     //CONSTANTS
-    private val logTag: String = "KTC_${javaClass.simpleName}"
     private val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
 
     //VARIABLES
@@ -36,7 +33,7 @@ class ChatFragment : Fragment()
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View?
     {
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Log.d(logTag, "$methodName: ")
+        Timber.d("$methodName: ")
 
         registerEventBus()
         binding = FragmentChatBinding.inflate(inflater, container, false)
@@ -47,13 +44,13 @@ class ChatFragment : Fragment()
     {
         super.onViewCreated(view, savedInstanceState)
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Log.d(logTag, "$methodName: ")
+        Timber.d("$methodName: ")
 
         binding.addressLabelText = "My address: ${bluetoothAdapter.name}"
         binding.addressLabel.visibility = View.VISIBLE
         messageView.setOnClickListener()
         {
-            Log.d(logTag, "$methodName: messageView: onClick: ")
+            Timber.d("$methodName: messageView: onClick: ")
 
             val imm : InputMethodManager = MInputMethodManager.getInputMethodManager()
             if(inputText.hasFocus())
@@ -64,7 +61,7 @@ class ChatFragment : Fragment()
         }
         sendButton.setOnClickListener()
         {
-            Log.d(logTag, "$methodName: sendButton: onClick: ")
+            Timber.d("$methodName: sendButton: onClick: ")
 
             if((inputText.text != null) and (inputText.text.toString() != ""))
             {
@@ -75,7 +72,7 @@ class ChatFragment : Fragment()
                         val message: String = inputText.text.toString()
                         if(Client.getInstance().isConnected())
                         {
-                            Log.d(logTag, "$methodName: sendButton: onClick: as CLIENT sending: $message: ")
+                            Timber.d("$methodName: sendButton: onClick: as CLIENT sending: $message: ")
 
                             messageView.addView(layoutCreator.createMessage(message, true))
                             Client.getInstance().sendMessageToServer(bluetoothAdapter.name, message)
@@ -87,7 +84,7 @@ class ChatFragment : Fragment()
                         val message: String = inputText.text.toString()
                         if(Server.getInstance().hasConnectedDevices())
                         {
-                            Log.d(logTag, "$methodName: sendButton: onClick: as SERVER sending: $message: ")
+                            Timber.d("$methodName: sendButton: onClick: as SERVER sending: $message: ")
 
                             messageView.addView(layoutCreator.createMessage(message, true))
                             Server.getInstance().sendMessageToClient(bluetoothAdapter.name, message)
@@ -96,7 +93,7 @@ class ChatFragment : Fragment()
                     }
                     CurrentRole.Role.NONE ->
                     {
-                        Log.d(logTag, "$methodName: sendButton: onClick: role: NONE: ")
+                        Timber.d("$methodName: sendButton: onClick: role: NONE: ")
                     }
                 }
             }
@@ -106,21 +103,21 @@ class ChatFragment : Fragment()
     private fun registerEventBus()
     {
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Log.d(logTag, "$methodName: ")
+        Timber.d("$methodName: ")
 
         if(!EventBus.getDefault().isRegistered(this))
         {
-            Log.d(logTag, "$methodName: EventBus registered: ")
+            Timber.d("$methodName: EventBus registered: ")
             EventBus.getDefault().register(this)
         }
-        else { Log.d(logTag, "$methodName: EventBus already registered: ") }
+        else { Timber.d("$methodName: EventBus already registered: ") }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun connectionMessage(event : Events.ConnectionMessage)
     {
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Log.d(logTag, "$methodName: ")
+        Timber.d("$methodName: ")
 
         messageView.addView(layoutCreator.createConnectionMessage(event.deviceAddress, event.isConnected))
     }
@@ -129,7 +126,7 @@ class ChatFragment : Fragment()
     fun setMessage(event : Events.SetMessage)
     {
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Log.d(logTag, "$methodName: ")
+        Timber.d("$methodName: ")
 
         messageView.addView(layoutCreator.createMessage(event.message, false))
     }

@@ -5,9 +5,8 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.le.*
 import android.content.Context
-import android.util.Log
-import android.widget.Toast
 import com.mygamecompany.kotlinchat.utilities.*
+import timber.log.Timber
 import java.util.*
 
 class Scanner(private val bluetoothAdapter : BluetoothAdapter, private val context : Context, private val clientCallback : BluetoothGattCallback)
@@ -21,20 +20,20 @@ class Scanner(private val bluetoothAdapter : BluetoothAdapter, private val conte
         {
             super.onScanResult(callbackType, result)
             val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-            Log.d(logTag, "$innerTag: $methodName: ")
+            Timber.d("$innerTag: $methodName: ")
 
             if(result?.scanRecord != null)
             {
-                Log.d(logTag, "$innerTag: $methodName: name: ${result.scanRecord?.deviceName}")
+                Timber.d("$innerTag: $methodName: name: ${result.scanRecord?.deviceName}")
                 if(result.device != null)
                 {
                     if(result.scanRecord?.serviceUuids != null)
                     {
                         for(uuid in result.scanRecord!!.serviceUuids)
                         {
-                            if(checkUUIDEquality(uuid.uuid.toString(), constants.serviceUUID.toString()))
+                            if(checkUUIDEquality(uuid.uuid.toString(), Constants.serviceUUID.toString()))
                             {
-                                Log.d(logTag, "$innerTag: $methodName: connected to: ${result.scanRecord?.deviceName}")
+                                Timber.d("$innerTag: $methodName: connected to: ${result.scanRecord?.deviceName}")
                                 stopScanning()
                                 if(!connected) connect(result.device)
                             }
@@ -42,24 +41,20 @@ class Scanner(private val bluetoothAdapter : BluetoothAdapter, private val conte
                     }
                     else
                     {
-                        Log.d(logTag, "$innerTag: $methodName: null uuid array: ")
+                        Timber.d("$innerTag: $methodName: null uuid array: ")
                     }
                 }
                 else
                 {
-                    Log.d(logTag, "$innerTag: $methodName: null device: ")
+                    Timber.d("$innerTag: $methodName: null device: ")
                 }
             }
             else
             {
-                Log.d(logTag, "$innerTag: $methodName: empty scan record: ")
+                Timber.d("$innerTag: $methodName: empty scan record: ")
             }
         }
     }
-
-    //CONSTANTS
-    private val logTag: String = "KTC_${javaClass.simpleName}"
-    private val constants: Constants = Constants.getInstance()
 
     //VARIABLES
     private var connected : Boolean = false
@@ -69,7 +64,7 @@ class Scanner(private val bluetoothAdapter : BluetoothAdapter, private val conte
     private fun buildScanFilters() : LinkedList<ScanFilter>
     {
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Log.d(logTag, "$methodName: ")
+        Timber.d("$methodName: ")
 
         val scanFilters : LinkedList<ScanFilter> = LinkedList()
         scanFilters.add(ScanFilter.Builder().build())
@@ -79,7 +74,7 @@ class Scanner(private val bluetoothAdapter : BluetoothAdapter, private val conte
     private fun buildScanSettings() : ScanSettings
     {
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Log.d(logTag, "$methodName: ")
+        Timber.d("$methodName: ")
 
         return ScanSettings.Builder().build()
     }
@@ -87,9 +82,9 @@ class Scanner(private val bluetoothAdapter : BluetoothAdapter, private val conte
     private fun checkUUIDEquality(uuidOne : String, uuidTwo: String) : Boolean
     {
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Log.d(logTag, "$methodName: ")
+        Timber.d("$methodName: ")
 
-        if(uuidOne.length != uuidTwo.length) { Log.d(logTag, "$methodName: wrong input data: "); return false; }
+        if(uuidOne.length != uuidTwo.length) { Timber.d("$methodName: wrong input data: "); return false; }
         for(n in 0..8) if(uuidOne[n] != uuidTwo[n]) return false
         return true
     }
@@ -97,7 +92,7 @@ class Scanner(private val bluetoothAdapter : BluetoothAdapter, private val conte
     private fun connect(device : BluetoothDevice)
     {
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Log.d(logTag, "$methodName: ")
+        Timber.d("$methodName: ")
 
         device.connectGatt(context, false, clientCallback)
         stopScanning()
@@ -106,18 +101,18 @@ class Scanner(private val bluetoothAdapter : BluetoothAdapter, private val conte
     private fun createScanner()
     {
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Log.d(logTag, "$methodName: ")
+        Timber.d("$methodName: ")
 
-        if(leScanner != null) { Log.d(logTag, "$methodName: scanner already created: "); return; }
-        if(bluetoothAdapter.isEnabled) { Log.d(logTag, "$methodName: scanner created: "); leScanner = bluetoothAdapter.bluetoothLeScanner; }
-        else { Log.d(logTag, "$methodName: bluetooth is not enabled: "); return; }
-        if(leScanner == null) { Log.d(logTag, "$methodName: LE scan is not available: ") }
+        if(leScanner != null) { Timber.d("$methodName: scanner already created: "); return; }
+        if(bluetoothAdapter.isEnabled) { Timber.d("$methodName: scanner created: "); leScanner = bluetoothAdapter.bluetoothLeScanner; }
+        else { Timber.d("$methodName: bluetooth is not enabled: "); return; }
+        if(leScanner == null) { Timber.d("$methodName: LE scan is not available: ") }
     }
 
     fun isConnected() : Boolean
     {
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Log.d(logTag, "$methodName: ")
+        Timber.d("$methodName: ")
 
         return connected
     }
@@ -125,20 +120,20 @@ class Scanner(private val bluetoothAdapter : BluetoothAdapter, private val conte
     private fun startScanner()
     {
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Log.d(logTag, "$methodName: ")
+        Timber.d("$methodName: ")
 
         if(leScanner != null)
         {
-            Log.d(logTag, "$methodName: scanning started: ")
+            Timber.d("$methodName: scanning started: ")
             leScanner?.startScan(buildScanFilters(), buildScanSettings(), scanCallback)
         }
-        else { Log.d(logTag, "$methodName: LE scan not available: ") }
+        else { Timber.d("$methodName: LE scan not available: ") }
     }
 
     fun startScanning()
     {
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Log.d(logTag, "$methodName: ")
+        Timber.d("$methodName: ")
 
         createScanner()
         startScanner()
@@ -147,20 +142,20 @@ class Scanner(private val bluetoothAdapter : BluetoothAdapter, private val conte
     private fun stopScanner()
     {
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Log.d(logTag, "$methodName: ")
+        Timber.d("$methodName: ")
 
         if(leScanner != null)
         {
-            Log.d(logTag, "$methodName: scanner stopped: ")
+            Timber.d("$methodName: scanner stopped: ")
             leScanner?.stopScan(scanCallback)
         }
-        else { Log.d(logTag, "$methodName: no need to stop scanner: ") }
+        else { Timber.d("$methodName: no need to stop scanner: ") }
     }
 
     fun stopScanning()
     {
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Log.d(logTag, "$methodName: ")
+        Timber.d("$methodName: ")
 
         stopScanner()
     }
@@ -168,7 +163,7 @@ class Scanner(private val bluetoothAdapter : BluetoothAdapter, private val conte
     fun switchConnectionValue(newState : Boolean)
     {
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Log.d(logTag, "$methodName: ")
+        Timber.d("$methodName: ")
 
         connected = newState
     }
@@ -176,21 +171,12 @@ class Scanner(private val bluetoothAdapter : BluetoothAdapter, private val conte
     //STATIC METHODS
     companion object
     {
-        private val logTag: String = "KTC_${Scanner::class.java.simpleName}"
         private var instance: Scanner? = null
-
-        fun isNull(): Boolean
-        {
-            val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-            Log.d(logTag, "$methodName: ")
-
-            return (instance == null)
-        }
 
         fun createInstance(bluetoothAdapter : BluetoothAdapter, context : Context, clientCallback : BluetoothGattCallback)
         {
             val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-            Log.d(logTag, "$methodName: ")
+            Timber.d("$methodName: ")
 
             instance = Scanner(bluetoothAdapter, context, clientCallback)
         }
@@ -198,7 +184,7 @@ class Scanner(private val bluetoothAdapter : BluetoothAdapter, private val conte
         fun getInstance(): Scanner
         {
             val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-            Log.d(logTag, "$methodName: ")
+            Timber.d("$methodName: ")
 
             return instance!!
         }
