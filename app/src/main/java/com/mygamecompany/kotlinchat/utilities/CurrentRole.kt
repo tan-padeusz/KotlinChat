@@ -1,6 +1,6 @@
 package com.mygamecompany.kotlinchat.utilities
 
-class CurrentRole
+object CurrentRole
 {
     enum class Role
     {
@@ -9,18 +9,7 @@ class CurrentRole
         SERVER
     }
 
-    companion object
-    {
-        private var current: Role = Role.NONE
-
-        fun getRole(): Role
-        {
-            return current
-        }
-
-        fun setRole(newRole: Role)
-        {
-            current = newRole
-        }
-    }
+    private var role: Role = Role.NONE
+    fun getRole(): Role = role
+    fun setRole(newRole: Role) { role = newRole }
 }

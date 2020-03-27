@@ -2,9 +2,9 @@ package com.mygamecompany.kotlinchat.bluetooth
 
 import android.bluetooth.*
 import android.content.Context
-import android.util.Log
 import org.greenrobot.eventbus.EventBus
 import com.mygamecompany.kotlinchat.utilities.*
+import timber.log.Timber
 
 class Client(bluetoothAdapter : BluetoothAdapter, context : Context)
 {
@@ -17,16 +17,16 @@ class Client(bluetoothAdapter : BluetoothAdapter, context : Context)
         {
             super.onCharacteristicChanged(gatt, characteristic)
             val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-            Log.d(logTag, "$innerTag: $methodName: ")
+            Timber.d("$innerTag: $methodName: ")
 
             val text = String(characteristic!!.value)
             when(text[0])
             {
                 //TODO("Should be erased?")
-                //constants.ping -> { Log.d(logTag, "$innerTag: $methodName: PING: ") }
-                constants.message ->
+                //Constants.ping -> { Timber.d("$innerTag: $methodName: PING: ") }
+                Constants.message ->
                 {
-                    Log.d(logTag, "$innerTag: $methodName: MESSAGE: ")
+                    Timber.d("$innerTag: $methodName: MESSAGE: ")
                     var newText = ""
                     for(i in 1 until text.length) newText += text[i]
                     EventBus.getDefault().post(Events.SetMessage(newText))
@@ -38,13 +38,13 @@ class Client(bluetoothAdapter : BluetoothAdapter, context : Context)
         {
             super.onConnectionStateChange(gatt, status, newState)
             val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-            Log.d(logTag, "$methodName: ")
+            Timber.d("$methodName: ")
 
             when (newState)
             {
                 BluetoothProfile.STATE_CONNECTED ->
                 {
-                    Log.d(logTag, "$innerTag: $methodName: SATE_CONNECTED: ")
+                    Timber.d("$innerTag: $methodName: SATE_CONNECTED: ")
 
                     Scanner.getInstance().switchConnectionValue(true)
                     EventBus.getDefault().post(Events.ConnectionMessage(gatt?.device!!.address, true))
@@ -52,14 +52,14 @@ class Client(bluetoothAdapter : BluetoothAdapter, context : Context)
                 }
                 BluetoothProfile.STATE_DISCONNECTED ->
                 {
-                    Log.d(logTag, "$innerTag: $methodName: STATE_DISCONNECTED: ")
+                    Timber.d("$innerTag: $methodName: STATE_DISCONNECTED: ")
 
                     Scanner.getInstance().switchConnectionValue(false)
                     clientCharacteristic?.writeType = BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
                     EventBus.getDefault().post(Events.ConnectionMessage(gatt?.device!!.address, false))
                     gatt.close()
                 }
-                else -> { Log.d(logTag, "$innerTag: $methodName: STATE_UNKNOWN: ") }
+                else -> { Timber.d("$innerTag: $methodName: STATE_UNKNOWN: ") }
             }
         }
 
@@ -67,7 +67,7 @@ class Client(bluetoothAdapter : BluetoothAdapter, context : Context)
         {
             super.onMtuChanged(gatt, mtu, status)
             val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-            Log.d(logTag, "$innerTag: $methodName: ")
+            Timber.d("$innerTag: $methodName: ")
 
             enableIndication(gatt as BluetoothGatt)
         }
@@ -76,19 +76,19 @@ class Client(bluetoothAdapter : BluetoothAdapter, context : Context)
         {
             super.onServicesDiscovered(gatt, status)
             val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-            Log.d(logTag, "$innerTag: $methodName: ")
+            Timber.d("$innerTag: $methodName: ")
 
             when (status)
             {
                 BluetoothGatt.GATT_SUCCESS ->
                 {
-                    Log.d(logTag, "$innerTag: $methodName: discovery success: ")
+                    Timber.d("$innerTag: $methodName: discovery success: ")
                     clientGatt = gatt
-                    clientCharacteristic = clientGatt?.getService(constants.serviceUUID)?.getCharacteristic(constants.characteristicUUID)
-                    if(clientCharacteristic == null) { Log.d(logTag, "$innerTag: $methodName: discovery success: client characteristic is null") }
+                    clientCharacteristic = clientGatt?.getService(Constants.serviceUUID)?.getCharacteristic(Constants.characteristicUUID)
+                    if(clientCharacteristic == null) { Timber.d("$innerTag: $methodName: discovery success: client characteristic is null") }
                     gatt!!.requestMtu(512)
                 }
-                else -> { Log.d(logTag, "$innerTag: $methodName: discovery failure: ") }
+                else -> { Timber.d("$innerTag: $methodName: discovery failure: ") }
             }
         }
     }
@@ -99,10 +99,6 @@ class Client(bluetoothAdapter : BluetoothAdapter, context : Context)
         Scanner.createInstance(bluetoothAdapter, context, gattClientCallback)
     }
 
-    //CONSTANTS
-    private val logTag: String = "KTC_${javaClass.simpleName}"
-    private val constants: Constants = Constants.getInstance()
-
     //VARIABLES
     private var clientCharacteristic : BluetoothGattCharacteristic? = null
     private var clientGatt : BluetoothGatt? = null
@@ -111,19 +107,19 @@ class Client(bluetoothAdapter : BluetoothAdapter, context : Context)
     private fun enableIndication(gatt : BluetoothGatt)
     {
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Log.d(logTag, "$methodName: ")
+        Timber.d("$methodName: ")
 
-        val characteristic : BluetoothGattCharacteristic = gatt.getService(constants.serviceUUID).getCharacteristic(constants.characteristicUUID)
+        val characteristic : BluetoothGattCharacteristic = gatt.getService(Constants.serviceUUID).getCharacteristic(Constants.characteristicUUID)
         gatt.setCharacteristicNotification(characteristic, true)
-        val descriptor : BluetoothGattDescriptor = characteristic.getDescriptor(constants.descriptorUUID)
+        val descriptor : BluetoothGattDescriptor = characteristic.getDescriptor(Constants.descriptorUUID)
         descriptor.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
-        Log.d(logTag, "$methodName: result: ${gatt.writeDescriptor(descriptor)}")
+        Timber.d("$methodName: result: ${gatt.writeDescriptor(descriptor)}")
     }
 
     fun enableScan(enable : Boolean)
     {
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Log.d(logTag, "$methodName: enable: $enable")
+        Timber.d("$methodName: enable: $enable")
 
         if(enable) Scanner.getInstance().startScanning()
         else Scanner.getInstance().stopScanning()
@@ -132,7 +128,7 @@ class Client(bluetoothAdapter : BluetoothAdapter, context : Context)
     fun isConnected() : Boolean
     {
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Log.d(logTag, "$methodName: ")
+        Timber.d("$methodName: ")
 
         return Scanner.getInstance().isConnected()
     }
@@ -140,28 +136,27 @@ class Client(bluetoothAdapter : BluetoothAdapter, context : Context)
     fun sendMessageToServer(name : String, message : String)
     {
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Log.d(logTag, "$methodName: ")
+        Timber.d("$methodName: ")
 
-        if(clientCharacteristic == null) { Log.d(logTag, "$methodName: clientCharacteristic is null: ") }
+        if(clientCharacteristic == null) { Timber.d("$methodName: clientCharacteristic is null: ") }
         else
         {
-            clientCharacteristic!!.setValue("${constants.message}${name}:\n${message}")
+            clientCharacteristic!!.setValue("${Constants.message}${name}:\n${message}")
             //TODO("Is it necessary?")
             //clientCharacteristic!!.writeType = BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
-            Log.d(logTag, "$methodName: result: ${clientGatt?.writeCharacteristic(clientCharacteristic)}")
+            Timber.d("$methodName: result: ${clientGatt?.writeCharacteristic(clientCharacteristic)}")
         }
     }
 
     //STATIC METHODS
     companion object
     {
-        private val logTag: String = "KTC_${Client::class.java.simpleName}"
         private var instance: Client? = null
 
         fun createInstance(bluetoothAdapter : BluetoothAdapter, context : Context)
         {
             val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-            Log.d(logTag, "$methodName: ")
+            Timber.d("$methodName: ")
 
             instance = Client(bluetoothAdapter, context)
         }
@@ -169,7 +164,7 @@ class Client(bluetoothAdapter : BluetoothAdapter, context : Context)
         fun getInstance(): Client
         {
             val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-            Log.d(logTag, "$methodName: ")
+            Timber.d("$methodName: ")
 
             return instance!!
         }

@@ -7,11 +7,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -19,6 +17,7 @@ import com.mygamecompany.kotlinchat.R
 import com.mygamecompany.kotlinchat.bluetooth.Client
 import com.mygamecompany.kotlinchat.bluetooth.Server
 import kotlinx.android.synthetic.main.fragment_start.*
+import timber.log.Timber
 import java.util.*
 
 class StartFragment : Fragment()
@@ -28,7 +27,6 @@ class StartFragment : Fragment()
     private val bluetoothRequestPermission: Int = 1
     private val locationRequestPermission: Int = 2
     private val timer: Timer = Timer("delay_start")
-    private val logTag: String = "KTC_${javaClass.simpleName}"
 
     //VARIABLES
     private var isBluetoothEnabled: Boolean = false
@@ -38,7 +36,7 @@ class StartFragment : Fragment()
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View?
     {
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Log.d(logTag, "$methodName: ")
+        Timber.d("$methodName: ")
 
         return inflater.inflate(R.layout.fragment_start, container, false)
     }
@@ -47,7 +45,7 @@ class StartFragment : Fragment()
     {
         super.onViewCreated(view, savedInstanceState)
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Log.d(logTag, "$methodName: ")
+        Timber.d("$methodName: ")
 
         timer.schedule(object : TimerTask()
         {
@@ -67,7 +65,7 @@ class StartFragment : Fragment()
     private fun delayedStartAction()
     {
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Log.d(logTag, "$methodName: ")
+        Timber.d("$methodName: ")
 
         setPermissionFlags()
         if(checkPermissions())
@@ -83,7 +81,7 @@ class StartFragment : Fragment()
     private fun checkPermissions(): Boolean
     {
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Log.d(logTag, "$methodName: ")
+        Timber.d("$methodName: ")
 
         return isBluetoothEnabled and isLocationEnabled
     }
@@ -91,17 +89,17 @@ class StartFragment : Fragment()
     private fun sendPermissionRequests()
     {
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Log.d(logTag, "$methodName: ")
+        Timber.d("$methodName: ")
 
         if (!isBluetoothEnabled)
         {
-            Log.d(logTag, "$methodName: requesting bluetooth: ")
+            Timber.d("$methodName: requesting bluetooth: ")
 
             startActivityForResult(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE), bluetoothRequestPermission)
         }
 
         if (!isLocationEnabled) {
-            Log.d(logTag, "$methodName: requesting location: ")
+            Timber.d("$methodName: requesting location: ")
 
             requestPermissions(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION), locationRequestPermission)
         }
@@ -110,7 +108,7 @@ class StartFragment : Fragment()
     private fun setPermissionFlags()
     {
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Log.d(logTag, "$methodName: ")
+        Timber.d("$methodName: ")
 
         isBluetoothEnabled = bluetoothAdapter.isEnabled
         isLocationEnabled = ((ContextCompat.checkSelfPermission(activity as Context,Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
@@ -120,7 +118,7 @@ class StartFragment : Fragment()
     private fun navigate()
     {
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Log.d(logTag, "$methodName: ")
+        Timber.d("$methodName: ")
 
         createInstances()
         findNavController().navigate(R.id.action_startFragment_to_roomFragment)
@@ -136,7 +134,7 @@ class StartFragment : Fragment()
     {
         super.onActivityResult(requestCode, resultCode, data)
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Log.d(logTag, "$methodName: ")
+        Timber.d("$methodName: ")
 
         if (requestCode == bluetoothRequestPermission)
         {
@@ -157,7 +155,7 @@ class StartFragment : Fragment()
     {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Log.d(logTag, "$methodName: ")
+        Timber.d("$methodName: ")
 
         if (requestCode == locationRequestPermission)
         {

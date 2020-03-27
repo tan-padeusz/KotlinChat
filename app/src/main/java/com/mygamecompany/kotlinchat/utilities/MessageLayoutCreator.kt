@@ -7,15 +7,15 @@ import android.view.Gravity
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.mygamecompany.kotlinchat.R
+import timber.log.Timber
 
 class MessageLayoutCreator(private val context: Context)
 {
-    private val logTag: String = "KTC_${javaClass.simpleName}"
-
+    //FUNCTIONS
     fun createMessage(message: String, sender: Boolean): TextView
     {
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Log.d(logTag, "$methodName: ")
+        Timber.d("$methodName: ")
 
         val newView = TextView(context)
         with(newView)
@@ -45,7 +45,7 @@ class MessageLayoutCreator(private val context: Context)
     fun createConnectionMessage(address: String, connected: Boolean): TextView
     {
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Log.d(logTag, "$methodName: ")
+        Timber.d("$methodName: ")
 
         val newView = TextView(context)
         with(newView)
@@ -67,7 +67,7 @@ class MessageLayoutCreator(private val context: Context)
     private fun createMessageLayoutParams(sender: Boolean): LinearLayout.LayoutParams
     {
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Log.d(logTag, "$methodName: ")
+        Timber.d("$methodName: ")
 
         val layoutParams : LinearLayout.LayoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
         layoutParams.setMargins(15, 15, 15, 15)
@@ -82,7 +82,7 @@ class MessageLayoutCreator(private val context: Context)
     private fun createConnectionMessageLayoutParams(): LinearLayout.LayoutParams
     {
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Log.d(logTag, "$methodName: ")
+        Timber.d("$methodName: ")
 
         val layoutParams : LinearLayout.LayoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
         layoutParams.setMargins(15, 15, 15, 15)
@@ -92,13 +92,12 @@ class MessageLayoutCreator(private val context: Context)
 
     companion object
     {
-        private val logTag: String = "KTC_${MessageLayoutCreator::class.java.simpleName}"
         private var instance: MessageLayoutCreator? = null
 
         fun createInstance(context: Context)
         {
             val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-            Log.d(logTag, "$methodName: ")
+            Timber.d("$methodName: ")
 
             instance = MessageLayoutCreator(context)
         }
@@ -106,7 +105,7 @@ class MessageLayoutCreator(private val context: Context)
         fun getInstance(): MessageLayoutCreator
         {
             val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-            Log.d(logTag, "$methodName: ")
+            Timber.d("$methodName: ")
 
             return instance!!
         }
