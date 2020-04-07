@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import com.mygamecompany.kotlinchat.bluetooth.Client
 import com.mygamecompany.kotlinchat.bluetooth.Server
-import com.mygamecompany.kotlinchat.utilities.CurrentRole
 import com.mygamecompany.kotlinchat.utilities.MInputMethodManager
 import com.mygamecompany.kotlinchat.utilities.MessageLayoutCreator
 import kotlinx.android.synthetic.main.fragment_chat.*
@@ -65,6 +64,8 @@ class ChatFragment : Fragment()
 
             if((inputText.text != null) and (inputText.text.toString() != ""))
             {
+                TODO("Implement live data message.")
+                /*
                 when(CurrentRole.getRole())
                 {
                     CurrentRole.Role.CLIENT ->
@@ -95,7 +96,7 @@ class ChatFragment : Fragment()
                     {
                         Timber.d("$methodName: sendButton: onClick: role: NONE: ")
                     }
-                }
+                }*/
             }
         }
     }

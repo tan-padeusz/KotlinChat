@@ -8,8 +8,26 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <EditText
+            android:id="@+id/usernameInput"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:inputType="textPersonName"
+            android:hint="@string/froom_usernameHint"
+            app:layout_constraintBottom_toTopOf="@+id/upperGuideline"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
         <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guideline"
+            android:id="@+id/upperGuideline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.1" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/lowerGuideline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -19,10 +37,10 @@
             android:id="@+id/searchRoom"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:text="@string/searchRoomText"
+            android:text="@string/froom_searchRoomText"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/joinRoom"
-            app:layout_constraintTop_toBottomOf="@id/guideline"
+            app:layout_constraintTop_toBottomOf="@id/lowerGuideline"
             app:layout_constraintBottom_toBottomOf="parent"
             style="@style/Widget.AppCompat.Button.Borderless"/>
 
@@ -30,11 +48,11 @@
             android:id="@+id/joinRoom"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:text="@string/joinRoomText"
+            android:text="@string/froom_joinRoomText"
             android:visibility="gone"
             app:layout_constraintStart_toEndOf="@id/searchRoom"
             app:layout_constraintEnd_toStartOf="@id/startRoom"
-            app:layout_constraintTop_toBottomOf="@id/guideline"
+            app:layout_constraintTop_toBottomOf="@id/lowerGuideline"
             app:layout_constraintBottom_toBottomOf="parent"
             style="@style/Widget.AppCompat.Button.Borderless"/>
 
@@ -42,10 +60,10 @@
             android:id="@+id/startRoom"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:text="@string/startRoomText"
+            android:text="@string/froom_startRoomText"
             app:layout_constraintStart_toEndOf="@id/joinRoom"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/guideline"
+            app:layout_constraintTop_toBottomOf="@id/lowerGuideline"
             app:layout_constraintBottom_toBottomOf="parent"
             style="@style/Widget.AppCompat.Button.Borderless"/>
 

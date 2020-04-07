@@ -1,10 +1,18 @@
 <resources>
     <string name="app_name">Kotlin Chat</string>
-    <string name="requestLabelText">BLUETOOTH AND LOCATION ARE NEEDED TO CHAT</string>
-    <string name="requestButtonText">SHOW REQUESTS</string>
-    <string name="searchRoomText">SEARCH ROOM</string>
-    <string name="startRoomText">START ROOM</string>
-    <string name="joinRoomText">JOIN ROOM</string>
-    <string name="sendButtonText">=></string>
-    <string name="greetingLabelText">WELCOME TO KOTLIN CHAT</string>
+
+    <!-- START FRAGMENT -->
+    <string name="fstart_greetingLabelText">WELCOME TO KOTLIN CHAT</string>
+    <string name="fstart_requestLabelText">BLUETOOTH AND LOCATION ARE NEEDED TO CHAT</string>
+    <string name="fstart_requestButtonText">START CHAT</string>
+
+    <!-- ROOM FRAGMENT -->
+    <string name="froom_usernameHint">Name…</string>
+    <string name="froom_searchRoomText">SEARCH ROOM</string>
+    <string name="froom_joinRoomText">JOIN ROOM</string>
+    <string name="froom_startRoomText">START ROOM</string>
+
+    <!-- CHAT ROOM -->
+    <string name="fchat_sendButtonText">=></string>
+
 </resources>

@@ -2,11 +2,14 @@ package com.mygamecompany.kotlinchat.bluetooth
 
 import android.bluetooth.*
 import android.content.Context
+import androidx.lifecycle.LiveData
+import com.mygamecompany.kotlinchat.interfaces.ChatDevice
 import org.greenrobot.eventbus.EventBus
 import com.mygamecompany.kotlinchat.utilities.*
 import timber.log.Timber
 
-class Client(bluetoothAdapter : BluetoothAdapter, context : Context)
+class Client(bluetoothAdapter : BluetoothAdapter, context : Context):
+    ChatDevice
 {
     //CLIENT CALLBACK
     private val gattClientCallback : BluetoothGattCallback = object : BluetoothGattCallback()
@@ -24,7 +27,7 @@ class Client(bluetoothAdapter : BluetoothAdapter, context : Context)
             {
                 //TODO("Should be erased?")
                 //Constants.ping -> { Timber.d("$innerTag: $methodName: PING: ") }
-                Constants.message ->
+                Constants.receiver ->
                 {
                     Timber.d("$innerTag: $methodName: MESSAGE: ")
                     var newText = ""
@@ -93,15 +96,17 @@ class Client(bluetoothAdapter : BluetoothAdapter, context : Context)
         }
     }
 
+
+
+    //VARIABLES
+    private var clientCharacteristic : BluetoothGattCharacteristic? = null
+    private var clientGatt : BluetoothGatt? = null
+
     //INITIALISE SCANNER
     init
     {
         Scanner.createInstance(bluetoothAdapter, context, gattClientCallback)
     }
-
-    //VARIABLES
-    private var clientCharacteristic : BluetoothGattCharacteristic? = null
-    private var clientGatt : BluetoothGatt? = null
 
     //FUNCTIONS
     private fun enableIndication(gatt : BluetoothGatt)
@@ -125,14 +130,6 @@ class Client(bluetoothAdapter : BluetoothAdapter, context : Context)
         else Scanner.getInstance().stopScanning()
     }
 
-    fun isConnected() : Boolean
-    {
-        val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Timber.d("$methodName: ")
-
-        return Scanner.getInstance().isConnected()
-    }
-
     fun sendMessageToServer(name : String, message : String)
     {
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
@@ -141,32 +138,20 @@ class Client(bluetoothAdapter : BluetoothAdapter, context : Context)
         if(clientCharacteristic == null) { Timber.d("$methodName: clientCharacteristic is null: ") }
         else
         {
-            clientCharacteristic!!.setValue("${Constants.message}${name}:\n${message}")
-            //TODO("Is it necessary?")
-            //clientCharacteristic!!.writeType = BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
+            //clientCharacteristic!!.setValue("${Constants.message}${name}:\n${message}")
             Timber.d("$methodName: result: ${clientGatt?.writeCharacteristic(clientCharacteristic)}")
         }
     }
 
-    //STATIC METHODS
-    companion object
-    {
-        private var instance: Client? = null
+    override fun runDevice(enable: Boolean) {
+        TODO("Not yet implemented")
+    }
 
-        fun createInstance(bluetoothAdapter : BluetoothAdapter, context : Context)
-        {
-            val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-            Timber.d("$methodName: ")
+    override fun sendMessage(message: String) {
+        TODO("Not yet implemented")
+    }
 
-            instance = Client(bluetoothAdapter, context)
-        }
-
-        fun getInstance(): Client
-        {
-            val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-            Timber.d("$methodName: ")
-
-            return instance!!
-        }
+    override fun receiveMessage(): LiveData<String> {
+        TODO("Not yet implemented")
     }
 }
