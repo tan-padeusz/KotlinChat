@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import androidx.navigation.fragment.findNavController
 import com.mygamecompany.kotlinchat.R
 import com.mygamecompany.kotlinchat.data.Repository
+import com.mygamecompany.kotlinchat.utilities.MessageLayoutCreator
 import kotlinx.android.synthetic.main.fragment_room.*
 import timber.log.Timber
 
@@ -26,7 +27,8 @@ class RoomFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         Timber.d("")
 
-        Repository.initializeBluetoothActions(BluetoothAdapter.getDefaultAdapter(), context!!)
+        Repository.initializeBluetoothDevices(BluetoothAdapter.getDefaultAdapter(), context!!)
+        MessageLayoutCreator.initializeLayoutCreator(context!!)
 
         searchRoom.setOnClickListener {
             Timber.d("searchRoom: onClick: ")

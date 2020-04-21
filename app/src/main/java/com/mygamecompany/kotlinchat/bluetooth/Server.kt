@@ -21,15 +21,11 @@ class Server(bluetoothAdapter : BluetoothAdapter, context : Context): ChatDevice
             when (newState) {
                 BluetoothProfile.STATE_CONNECTED -> {
                     Timber.d("STATE_CONNECTED: ")
-                    //TODO("Implement connection message.")
-                }
-                BluetoothProfile.STATE_DISCONNECTING-> {
-                    Timber.d("STATE_DISCONNECTING")
-                    //TODO(Implement disconnection message.")
+                    if(!connectedDevices.contains(device)) connectedDevices.add(device!!)
                 }
                 BluetoothProfile.STATE_DISCONNECTED -> {
                     Timber.d("STATE_DISCONNECTED: ")
-                    for (client in connectedDevices) connectedDevices.remove(client)
+                    connectedDevices.remove(device!!)
                 }
                 else -> { Timber.d("STATE_UNKNOWN: ") }
             }
@@ -40,11 +36,12 @@ class Server(bluetoothAdapter : BluetoothAdapter, context : Context): ChatDevice
             Timber.d("")
             val message = String(value as ByteArray)
             val status: Int = when(message[0]) {
-                Constants.clientConnectionMessage -> Constants.connectionMessage
-                Constants.receiver -> Constants.textMessage
-                else -> Constants.messageNotReceived
+                Constants.TEXT_MESSAGE_RECEIVER -> Constants.TEXT_MESSAGE_STATUS
+                Constants.CONNECTION_MESSAGE -> Constants.CONNECTION_MESSAGE_STATUS
+                Constants.DISCONNECTION_MESSAGE -> Constants.DISCONNECTION_MESSAGE_STATUS
+                else -> Constants.OTHER_MESSAGE_STATUS
             }
-            Timber.d("status=$status ; message=$message")
+            Timber.d("${Repository}: status=$status ; message=$message")
             lastMessage.postValue(message)
             val serverCharacteristic: BluetoothGattCharacteristic = advertiser.getServerCharacteristic()
             serverCharacteristic.setValue(message)
@@ -77,21 +74,21 @@ class Server(bluetoothAdapter : BluetoothAdapter, context : Context): ChatDevice
     }
 
     override fun sendMessage(message: String) {
-        Timber.d("")
+        Timber.d(Repository.toString())
         val fullMessage = "${Repository.username}:\n${message}"
-        lastMessage.postValue(Constants.sender + fullMessage)
+        lastMessage.postValue(Constants.TEXT_MESSAGE_SENDER + fullMessage)
         val characteristic = advertiser.getServerCharacteristic()
-        characteristic.setValue(Constants.receiver + fullMessage)
+        characteristic.setValue(Constants.TEXT_MESSAGE_RECEIVER + fullMessage)
         for(device in connectedDevices) notifyDevice(device, characteristic)
     }
 
     override fun receiveMessage(): LiveData<String> {
-        Timber.d("")
+        Timber.d(Repository.toString())
         return lastMessage
     }
 
     private fun notifyDevice(client: BluetoothDevice, characteristic: BluetoothGattCharacteristic) {
-        Timber.d("")
+        Timber.d(Repository.toString())
         advertiser.getGattServer()!!.notifyCharacteristicChanged(client, characteristic, false)
     }
 }

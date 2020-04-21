@@ -15,7 +15,7 @@ object Repository: ChatDevice {
     private var client: Client? = null
     private var server: Server? = null
 
-    fun initializeBluetoothActions(bluetoothAdapter: BluetoothAdapter, context: Context) {
+    fun initializeBluetoothDevices(bluetoothAdapter: BluetoothAdapter, context: Context) {
         client = Client(bluetoothAdapter, context)
         server = Server(bluetoothAdapter, context)
     }
@@ -33,5 +33,9 @@ object Repository: ChatDevice {
     override fun receiveMessage(): LiveData<String> {
         return if(isServer) server!!.receiveMessage()
         else client!!.receiveMessage()
+    }
+
+    override fun toString(): String {
+        return "KTC"
     }
 }

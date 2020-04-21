@@ -28,7 +28,6 @@ class ChatFragment : Fragment()
     private val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
 
     //VARIABLES
-    private var layoutCreator: MessageLayoutCreator = MessageLayoutCreator.getInstance()
     private lateinit var binding: FragmentChatBinding
 
     //FUNCTIONS
@@ -37,7 +36,7 @@ class ChatFragment : Fragment()
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
         Timber.d("$methodName: ")
 
-        registerEventBus()
+//        registerEventBus()
         binding = FragmentChatBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -50,8 +49,10 @@ class ChatFragment : Fragment()
 
         Repository.receiveMessage().observe(viewLifecycleOwner, Observer {
             when(it[0]) {
-                Constants.receiver -> binding.messageView.addView(MessageLayoutCreator.getInstance().createMessage(it.removeRange(0, 1), false))
-                Constants.sender -> binding.messageView.addView(MessageLayoutCreator.getInstance().createMessage(it.removeRange(0, 1), true))
+                Constants.TEXT_MESSAGE_SENDER -> binding.messageView.addView(MessageLayoutCreator.createMessage(it.removeRange(0, 1), true))
+                Constants.TEXT_MESSAGE_RECEIVER -> binding.messageView.addView(MessageLayoutCreator.createMessage(it.removeRange(0, 1), false))
+                Constants.CONNECTION_MESSAGE -> binding.messageView.addView(MessageLayoutCreator.createConnectionMessage(it.removeRange(0,1), true))
+                Constants.DISCONNECTION_MESSAGE -> binding.messageView.addView(MessageLayoutCreator.createConnectionMessage(it.removeRange(0,1), false))
                 else -> { }
             }
         })
@@ -111,34 +112,34 @@ class ChatFragment : Fragment()
         }
     }
 
-    private fun registerEventBus()
-    {
-        val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Timber.d("$methodName: ")
-
-        if(!EventBus.getDefault().isRegistered(this))
-        {
-            Timber.d("$methodName: EventBus registered: ")
-            EventBus.getDefault().register(this)
-        }
-        else { Timber.d("$methodName: EventBus already registered: ") }
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun connectionMessage(event : Events.ConnectionMessage)
-    {
-        val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Timber.d("$methodName: ")
-
-        messageView.addView(layoutCreator.createConnectionMessage(event.deviceAddress, event.isConnected))
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun setMessage(event : Events.SetMessage)
-    {
-        val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Timber.d("$methodName: ")
-
-        messageView.addView(layoutCreator.createMessage(event.message, false))
-    }
+//    private fun registerEventBus()
+//    {
+//        val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
+//        Timber.d("$methodName: ")
+//
+//        if(!EventBus.getDefault().isRegistered(this))
+//        {
+//            Timber.d("$methodName: EventBus registered: ")
+//            EventBus.getDefault().register(this)
+//        }
+//        else { Timber.d("$methodName: EventBus already registered: ") }
+//    }
+//
+//    @Subscribe(threadMode = ThreadMode.MAIN)
+//    fun connectionMessage(event : Events.ConnectionMessage)
+//    {
+//        val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
+//        Timber.d("$methodName: ")
+//
+//        messageView.addView(layoutCreator.createConnectionMessage(event.deviceAddress, event.isConnected))
+//    }
+//
+//    @Subscribe(threadMode = ThreadMode.MAIN)
+//    fun setMessage(event : Events.SetMessage)
+//    {
+//        val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
+//        Timber.d("$methodName: ")
+//
+//        messageView.addView(layoutCreator.createMessage(event.message, false))
+//    }
 }
