@@ -119,15 +119,7 @@ class StartFragment : Fragment()
     {
         val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
         Timber.d("$methodName: ")
-
-        createInstances()
         findNavController().navigate(R.id.action_startFragment_to_roomFragment)
-    }
-
-    private fun createInstances()
-    {
-        Client.createInstance(bluetoothAdapter, activity as Context)
-        Server.createInstance(bluetoothAdapter, activity as Context)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?)

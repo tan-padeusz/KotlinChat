@@ -7,12 +7,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import androidx.lifecycle.Observer
 import com.mygamecompany.kotlinchat.bluetooth.Client
 import com.mygamecompany.kotlinchat.bluetooth.Server
+import com.mygamecompany.kotlinchat.data.Repository
 import com.mygamecompany.kotlinchat.utilities.MInputMethodManager
 import com.mygamecompany.kotlinchat.utilities.MessageLayoutCreator
 import kotlinx.android.synthetic.main.fragment_chat.*
 import com.mygamecompany.kotlinchat.databinding.FragmentChatBinding
+import com.mygamecompany.kotlinchat.utilities.Constants
 import com.mygamecompany.kotlinchat.utilities.Events
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -39,32 +42,39 @@ class ChatFragment : Fragment()
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?)
-    {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Timber.d("$methodName: ")
-
-        binding.addressLabelText = "My address: ${bluetoothAdapter.name}"
+        Timber.d("")
+        binding.addressLabelText = "My name: ${Repository.username}"
         binding.addressLabel.visibility = View.VISIBLE
-        messageView.setOnClickListener()
-        {
-            Timber.d("$methodName: messageView: onClick: ")
+
+        Repository.receiveMessage().observe(viewLifecycleOwner, Observer {
+            when(it[0]) {
+                Constants.receiver -> binding.messageView.addView(MessageLayoutCreator.getInstance().createMessage(it.removeRange(0, 1), false))
+                Constants.sender -> binding.messageView.addView(MessageLayoutCreator.getInstance().createMessage(it.removeRange(0, 1), true))
+                else -> { }
+            }
+        })
+
+        messageView.setOnClickListener() {
+            Timber.d("messageView: onClick: ")
 
             val imm : InputMethodManager = MInputMethodManager.getInputMethodManager()
-            if(inputText.hasFocus())
-            {
+            if(inputText.hasFocus()) {
                 imm.hideSoftInputFromWindow(inputText.windowToken, 0)
                 inputText.clearFocus()
             }
         }
-        sendButton.setOnClickListener()
-        {
-            Timber.d("$methodName: sendButton: onClick: ")
+
+        sendButton.setOnClickListener() {
+            Timber.d("sendButton: onClick: ")
 
             if((inputText.text != null) and (inputText.text.toString() != ""))
             {
-                TODO("Implement live data message.")
+                Repository.sendMessage(inputText.text.toString())
+                inputText.text.clear()
+
+
                 /*
                 when(CurrentRole.getRole())
                 {

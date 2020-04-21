@@ -1,5 +1,6 @@
 package com.mygamecompany.kotlinchat.fragments
 
+import android.bluetooth.BluetoothAdapter
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -24,6 +25,8 @@ class RoomFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         Timber.d("")
+
+        Repository.initializeBluetoothActions(BluetoothAdapter.getDefaultAdapter(), context!!)
 
         searchRoom.setOnClickListener {
             Timber.d("searchRoom: onClick: ")

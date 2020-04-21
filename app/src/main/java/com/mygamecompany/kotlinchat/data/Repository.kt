@@ -21,14 +21,17 @@ object Repository: ChatDevice {
     }
 
     override fun runDevice(enable: Boolean) {
-        TODO("Not yet implemented")
+        if(isServer) server!!.runDevice(enable)
+        else client!!.runDevice(enable)
     }
 
     override fun sendMessage(message: String) {
-        TODO("Not yet implemented")
+        if(isServer) server!!.sendMessage(message)
+        else client!!.sendMessage(message)
     }
 
     override fun receiveMessage(): LiveData<String> {
-        TODO("Not yet implemented")
+        return if(isServer) server!!.receiveMessage()
+        else client!!.receiveMessage()
     }
 }

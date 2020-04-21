@@ -3,155 +3,107 @@ package com.mygamecompany.kotlinchat.bluetooth
 import android.bluetooth.*
 import android.content.Context
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import com.mygamecompany.kotlinchat.data.Repository
 import com.mygamecompany.kotlinchat.interfaces.ChatDevice
-import org.greenrobot.eventbus.EventBus
 import com.mygamecompany.kotlinchat.utilities.*
 import timber.log.Timber
 
-class Client(bluetoothAdapter : BluetoothAdapter, context : Context):
-    ChatDevice
-{
+class Client(bluetoothAdapter : BluetoothAdapter, context : Context): ChatDevice {
+
     //CLIENT CALLBACK
-    private val gattClientCallback : BluetoothGattCallback = object : BluetoothGattCallback()
-    {
-        private val innerTag = "gattClientCallback"
+    private val gattClientCallback : BluetoothGattCallback = object : BluetoothGattCallback() {
 
-        override fun onCharacteristicChanged(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?)
-        {
+        override fun onCharacteristicChanged(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?) {
             super.onCharacteristicChanged(gatt, characteristic)
-            val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-            Timber.d("$innerTag: $methodName: ")
-
-            val text = String(characteristic!!.value)
-            when(text[0])
-            {
-                //TODO("Should be erased?")
-                //Constants.ping -> { Timber.d("$innerTag: $methodName: PING: ") }
-                Constants.receiver ->
-                {
-                    Timber.d("$innerTag: $methodName: MESSAGE: ")
-                    var newText = ""
-                    for(i in 1 until text.length) newText += text[i]
-                    EventBus.getDefault().post(Events.SetMessage(newText))
-                }
-            }
+            val message = String(characteristic!!.value)
+            Timber.d("message=$message")
+            lastMessage.postValue(message)
         }
 
-        override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int)
-        {
+        override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
             super.onConnectionStateChange(gatt, status, newState)
-            val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-            Timber.d("$methodName: ")
+            Timber.d("")
+            when (newState) {
 
-            when (newState)
-            {
-                BluetoothProfile.STATE_CONNECTED ->
-                {
-                    Timber.d("$innerTag: $methodName: SATE_CONNECTED: ")
-
-                    Scanner.getInstance().switchConnectionValue(true)
-                    EventBus.getDefault().post(Events.ConnectionMessage(gatt?.device!!.address, true))
-                    gatt.discoverServices()
+                BluetoothProfile.STATE_CONNECTED -> {
+                    Timber.d("SATE_CONNECTED: ")
+                    //TODO("Implement connection message.")
+                    scanner.switchConnectionValue(true)
+                    gatt?.discoverServices()
                 }
-                BluetoothProfile.STATE_DISCONNECTED ->
-                {
-                    Timber.d("$innerTag: $methodName: STATE_DISCONNECTED: ")
 
-                    Scanner.getInstance().switchConnectionValue(false)
-                    clientCharacteristic?.writeType = BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
-                    EventBus.getDefault().post(Events.ConnectionMessage(gatt?.device!!.address, false))
-                    gatt.close()
+                BluetoothProfile.STATE_DISCONNECTING -> {
+                    //TODO("Implement disconnection message.")
                 }
-                else -> { Timber.d("$innerTag: $methodName: STATE_UNKNOWN: ") }
+
+                BluetoothProfile.STATE_DISCONNECTED -> {
+                    Timber.d("STATE_DISCONNECTED: ")
+                    scanner.switchConnectionValue(false)
+                    gatt?.close()
+                }
+
+                else -> { Timber.d("STATE_UNKNOWN: ") }
             }
         }
 
-        override fun onMtuChanged(gatt: BluetoothGatt?, mtu: Int, status: Int)
-        {
+        override fun onMtuChanged(gatt: BluetoothGatt?, mtu: Int, status: Int) {
             super.onMtuChanged(gatt, mtu, status)
-            val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-            Timber.d("$innerTag: $methodName: ")
-
+            Timber.d("")
             enableIndication(gatt as BluetoothGatt)
         }
 
-        override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int)
-        {
+        override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
             super.onServicesDiscovered(gatt, status)
-            val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-            Timber.d("$innerTag: $methodName: ")
-
-            when (status)
-            {
-                BluetoothGatt.GATT_SUCCESS ->
-                {
-                    Timber.d("$innerTag: $methodName: discovery success: ")
+            Timber.d("")
+            when (status) {
+                BluetoothGatt.GATT_SUCCESS -> {
+                    Timber.d("discovery success: ")
                     clientGatt = gatt
                     clientCharacteristic = clientGatt?.getService(Constants.serviceUUID)?.getCharacteristic(Constants.characteristicUUID)
-                    if(clientCharacteristic == null) { Timber.d("$innerTag: $methodName: discovery success: client characteristic is null") }
+                    if(clientCharacteristic == null) { Timber.d("discovery success: client characteristic is null") }
                     gatt!!.requestMtu(512)
                 }
-                else -> { Timber.d("$innerTag: $methodName: discovery failure: ") }
+                else -> { Timber.d("discovery failure: ") }
             }
         }
     }
 
-
+    //CONSTANTS
+    private val lastMessage: MutableLiveData<String> = MutableLiveData()
+    private val scanner: Scanner = Scanner(bluetoothAdapter, context, gattClientCallback)
 
     //VARIABLES
     private var clientCharacteristic : BluetoothGattCharacteristic? = null
     private var clientGatt : BluetoothGatt? = null
 
-    //INITIALISE SCANNER
-    init
-    {
-        Scanner.createInstance(bluetoothAdapter, context, gattClientCallback)
-    }
-
     //FUNCTIONS
-    private fun enableIndication(gatt : BluetoothGatt)
-    {
-        val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Timber.d("$methodName: ")
-
-        val characteristic : BluetoothGattCharacteristic = gatt.getService(Constants.serviceUUID).getCharacteristic(Constants.characteristicUUID)
-        gatt.setCharacteristicNotification(characteristic, true)
-        val descriptor : BluetoothGattDescriptor = characteristic.getDescriptor(Constants.descriptorUUID)
-        descriptor.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
-        Timber.d("$methodName: result: ${gatt.writeDescriptor(descriptor)}")
-    }
-
-    fun enableScan(enable : Boolean)
-    {
-        val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Timber.d("$methodName: enable: $enable")
-
-        if(enable) Scanner.getInstance().startScanning()
-        else Scanner.getInstance().stopScanning()
-    }
-
-    fun sendMessageToServer(name : String, message : String)
-    {
-        val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Timber.d("$methodName: ")
-
-        if(clientCharacteristic == null) { Timber.d("$methodName: clientCharacteristic is null: ") }
-        else
-        {
-            //clientCharacteristic!!.setValue("${Constants.message}${name}:\n${message}")
-            Timber.d("$methodName: result: ${clientGatt?.writeCharacteristic(clientCharacteristic)}")
-        }
-    }
-
     override fun runDevice(enable: Boolean) {
-        TODO("Not yet implemented")
+        Timber.d("")
+        if(enable) scanner.startScanning()
+        else scanner.stopScanning()
     }
 
     override fun sendMessage(message: String) {
-        TODO("Not yet implemented")
+        Timber.d("")
+        val fullMessage = "${Repository.username}:\n${message}"
+        lastMessage.postValue(Constants.sender + fullMessage)
+        if(clientCharacteristic != null) {
+            clientCharacteristic!!.setValue(Constants.receiver + fullMessage)
+            Timber.d("result=${clientGatt?.writeCharacteristic(clientCharacteristic)}")
+        } else { Timber.d("clientCharacteristic is null") }
     }
 
     override fun receiveMessage(): LiveData<String> {
-        TODO("Not yet implemented")
+        return lastMessage
+    }
+
+    private fun enableIndication(gatt : BluetoothGatt) {
+        Timber.d("")
+        val characteristic: BluetoothGattCharacteristic = gatt.getService(Constants.serviceUUID).getCharacteristic(Constants.characteristicUUID)
+        gatt.setCharacteristicNotification(characteristic, true)
+        val descriptor : BluetoothGattDescriptor = characteristic.getDescriptor(Constants.descriptorUUID)
+        descriptor.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+        Timber.d("result=${gatt.writeDescriptor(descriptor)}")
     }
 }

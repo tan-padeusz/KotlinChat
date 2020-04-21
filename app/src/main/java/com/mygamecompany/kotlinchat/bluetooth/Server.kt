@@ -21,11 +21,15 @@ class Server(bluetoothAdapter : BluetoothAdapter, context : Context): ChatDevice
             when (newState) {
                 BluetoothProfile.STATE_CONNECTED -> {
                     Timber.d("STATE_CONNECTED: ")
-                    TODO("Implement connection handler!")
+                    //TODO("Implement connection message.")
+                }
+                BluetoothProfile.STATE_DISCONNECTING-> {
+                    Timber.d("STATE_DISCONNECTING")
+                    //TODO(Implement disconnection message.")
                 }
                 BluetoothProfile.STATE_DISCONNECTED -> {
                     Timber.d("STATE_DISCONNECTED: ")
-                    TODO("Implement connection handler!")
+                    for (client in connectedDevices) connectedDevices.remove(client)
                 }
                 else -> { Timber.d("STATE_UNKNOWN: ") }
             }
@@ -34,10 +38,9 @@ class Server(bluetoothAdapter : BluetoothAdapter, context : Context): ChatDevice
         override fun onCharacteristicWriteRequest(device: BluetoothDevice?, requestId: Int, characteristic: BluetoothGattCharacteristic?, preparedWrite: Boolean, responseNeeded: Boolean, offset: Int, value: ByteArray?) {
             super.onCharacteristicWriteRequest(device, requestId, characteristic, preparedWrite, responseNeeded, offset, value)
             Timber.d("")
-
             val message = String(value as ByteArray)
             val status: Int = when(message[0]) {
-                Constants.connection -> Constants.connectionMessage
+                Constants.clientConnectionMessage -> Constants.connectionMessage
                 Constants.receiver -> Constants.textMessage
                 else -> Constants.messageNotReceived
             }
@@ -77,7 +80,7 @@ class Server(bluetoothAdapter : BluetoothAdapter, context : Context): ChatDevice
         Timber.d("")
         val fullMessage = "${Repository.username}:\n${message}"
         lastMessage.postValue(Constants.sender + fullMessage)
-        val characteristic: BluetoothGattCharacteristic = advertiser.getServerCharacteristic()
+        val characteristic = advertiser.getServerCharacteristic()
         characteristic.setValue(Constants.receiver + fullMessage)
         for(device in connectedDevices) notifyDevice(device, characteristic)
     }
