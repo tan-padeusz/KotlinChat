@@ -1,6 +1,7 @@
 package com.mygamecompany.kotlinchat.utilities
 
 import android.content.Context
+import android.content.res.Resources
 import android.graphics.Color
 import android.view.Gravity
 import android.widget.LinearLayout
@@ -11,68 +12,75 @@ import timber.log.Timber
 
 object MessageLayoutCreator {
 
-    private var context: Context? = null
+    //VALUES
+    private const val appTag = Repository.TAG
+
+    //VARIABLES
+    private lateinit var context: Context
 
     //FUNCTIONS
     fun initializeLayoutCreator(context: Context) {
+        Timber.d(appTag)
         this.context = context
     }
 
     fun createMessage(message: String, sender: Boolean): TextView {
-        Timber.d(Repository.toString())
+        Timber.d("$appTag: sender=$sender")
         val newView = TextView(context)
-        with(newView)
-        {
+        with(newView) {
             text = message
-            textSize = 17.toFloat()
-            setPadding(20, 10, 20, 10)
-            layoutParams = when(sender)
-            {
-                true ->
-                {
+            textSize = resources.getDimension(R.dimen.message_text_size)
+            val horizontalPadding: Int = resources.getDimension(R.dimen.message_padding_horizontal).toInt()
+            val verticalPadding: Int = resources.getDimension(R.dimen.message_padding_vertical).toInt()
+            setPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding)
+            layoutParams = when(sender) {
+                true -> {
                     setBackgroundResource(R.drawable.my_message)
                     setTextColor(Color.WHITE)
-                    createMessageLayoutParams(sender)
+                    createMessageLayoutParams(sender, resources)
                 }
-                false ->
-                {
-                    setBackgroundResource(R.drawable.outer_message)
+                false -> {
+                    setBackgroundResource(R.drawable.not_my_message)
                     setTextColor(Color.BLACK)
-                    createMessageLayoutParams(sender)
+                    createMessageLayoutParams(sender, resources)
                 }
             }
         }
         return newView
     }
 
-    fun createConnectionMessage(username: String, connected: Boolean): TextView {
-        Timber.d(Repository.toString())
-        val newView = TextView(context)
-        with(newView) {
-            textSize = 17.toFloat()
-            setTextColor(Color.WHITE)
-            setPadding(20, 10 ,20 ,10)
-            layoutParams = createConnectionMessageLayoutParams()
-            setBackgroundResource(R.drawable.connection_message)
-            text = if (connected) "$username has connected"
-            else "$username has disconnected"
-        }
-        return newView
-    }
-
-    private fun createMessageLayoutParams(sender: Boolean): LinearLayout.LayoutParams {
-        Timber.d(Repository.toString())
-        val layoutParams : LinearLayout.LayoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
-        layoutParams.setMargins(15, 15, 15, 15)
+    private fun createMessageLayoutParams(sender: Boolean, resources: Resources): LinearLayout.LayoutParams {
+        Timber.d("$appTag: sender=$sender")
+        val layoutParams: LinearLayout.LayoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+        val margin: Int = resources.getDimension(R.dimen.message_margin).toInt()
+        layoutParams.setMargins(margin, margin, margin, margin)
         layoutParams.gravity = if(sender) Gravity.END
         else Gravity.START
         return layoutParams
     }
 
-    private fun createConnectionMessageLayoutParams(): LinearLayout.LayoutParams {
-        Timber.d(Repository.toString())
-        val layoutParams : LinearLayout.LayoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
-        layoutParams.setMargins(15, 15, 15, 15)
+    fun createConnectionMessage(username: String, connected: Boolean): TextView {
+        Timber.d("$appTag: connected=$connected")
+        val newView = TextView(context)
+        with(newView) {
+            textSize = resources.getDimension(R.dimen.message_text_size)
+            val horizontalPadding: Int = resources.getDimension(R.dimen.message_padding_horizontal).toInt()
+            val verticalPadding: Int = resources.getDimension(R.dimen.message_padding_vertical).toInt()
+            setTextColor(Color.WHITE)
+            setPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding)
+            layoutParams = createConnectionMessageLayoutParams(resources)
+            setBackgroundResource(R.drawable.connection_message)
+            text = if (connected) username + resources.getString(R.string.fchat_connection_message)
+            else username + resources.getString(R.string.fchat_disconnection_message)
+        }
+        return newView
+    }
+
+    private fun createConnectionMessageLayoutParams(resources: Resources): LinearLayout.LayoutParams {
+        Timber.d(appTag)
+        val layoutParams: LinearLayout.LayoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+        val margin: Int = resources.getDimension(R.dimen.message_margin).toInt()
+        layoutParams.setMargins(margin, margin, margin, margin)
         layoutParams.gravity = Gravity.CENTER
         return layoutParams
     }

@@ -14,5 +14,7 @@
 
     <!-- CHAT ROOM -->
     <string name="fchat_sendButtonText">=></string>
+    <string name="fchat_connection_message">has connected.</string>
+    <string name="fchat_disconnection_message">has disconnected.</string>
 
 </resources>

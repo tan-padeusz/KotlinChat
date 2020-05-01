@@ -3,8 +3,7 @@ package com.mygamecompany.kotlinchat.utilities
 import android.os.ParcelUuid
 import java.util.*
 
-object Constants
-{
+object Constants {
     val serviceUUID : UUID = UUID.fromString("0000B87C-0000-1000-8000-00805F9B34FB")
     val parcelServiceUUID: ParcelUuid = ParcelUuid.fromString("0000B87C-0000-1000-8000-00805F9B34FB")
     val characteristicUUID: UUID = UUID.fromString("0000ABCD-0000-1000-8000-00805F9B34FB")

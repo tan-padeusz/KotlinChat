@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- FONT SIZES -->
+    <dimen name="message_text_size">17sp</dimen>
+
+    <!-- MESSAGE -->
+    <dimen name="message_padding_horizontal">20dp</dimen>
+    <dimen name="message_padding_vertical">10dp</dimen>
+    <dimen name="message_margin">15dp</dimen>
+</resources>
