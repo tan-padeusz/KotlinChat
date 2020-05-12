@@ -15,11 +15,10 @@ import com.mygamecompany.kotlinchat.utilities.MessageLayoutCreator
 import kotlinx.android.synthetic.main.fragment_chat.*
 import timber.log.Timber
 
+const val appTag: String = Repository.TAG
+
 class ChatFragment : Fragment()
 {
-    //VALUES
-    private val appTag: String = Repository.TAG
-
     //VARIABLES
     private lateinit var binding: FragmentChatBinding
 
@@ -50,7 +49,7 @@ class ChatFragment : Fragment()
 
         messageView.setOnClickListener {
             Timber.d(appTag)
-            val imm: InputMethodManager = activity!!.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+            val imm: InputMethodManager = requireActivity().getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
             if(inputText.hasFocus()) {
                 imm.hideSoftInputFromWindow(inputText.windowToken, 0)
                 inputText.clearFocus()
