@@ -5,43 +5,35 @@ import android.content.Context
 import androidx.lifecycle.LiveData
 import com.mygamecompany.kotlinchat.bluetooth.Client
 import com.mygamecompany.kotlinchat.bluetooth.Server
-import timber.log.Timber
+import com.mygamecompany.kotlinchat.interfaces.ChatDevice
 
-object Repository {
-    enum class DeviceRole {
-        NONE,
-        CLIENT,
-        SERVER
-    }
+object Repository: ChatDevice {
 
-    private var deviceRole: DeviceRole = DeviceRole.NONE
-    private var userName: String = ""
+    const val TAG: String = "KTC"
 
-    private var client: Client? = null
-    private var server: Server? = null
+    var isServer: Boolean = false
+    var username: String = ""
 
-    fun initializeBluetoothActions(bluetoothAdapter: BluetoothAdapter, context: Context) {
+    private lateinit var client: Client
+    private lateinit var server: Server
+
+    fun initializeBluetoothDevices(bluetoothAdapter: BluetoothAdapter, context: Context) {
         client = Client(bluetoothAdapter, context)
         server = Server(bluetoothAdapter, context)
     }
 
-    fun setUserName(userName: String) {
-        this.userName = userName
+    override fun runDevice(enable: Boolean) {
+        if(isServer) server.runDevice(enable)
+        else client.runDevice(enable)
     }
 
-    fun changeDeviceRole(newRole: DeviceRole) {
-        deviceRole = newRole
+    override fun sendMessage(message: String) {
+        if(isServer) server.sendMessage(message)
+        else client.sendMessage(message)
     }
 
-    fun sendMessage(message: String) {
-        when(deviceRole) {
-            DeviceRole.CLIENT -> client!!.sendMessageToServer(userName, message)
-            DeviceRole.SERVER -> server!!.sendMessageToClient(userName, message)
-            DeviceRole.NONE -> Timber.d("Device role was not set!")
-        }
-    }
-
-    fun receiveMessage(): LiveData<String> {
-        throw NotImplementedError("receiveMessage method was not yet implemented!")
+    override fun receiveMessage(): LiveData<String> {
+        return if(isServer) server.receiveMessage()
+        else client.receiveMessage()
     }
 }

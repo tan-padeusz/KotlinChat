@@ -1,113 +1,83 @@
 package com.mygamecompany.kotlinchat.utilities
 
 import android.content.Context
+import android.content.res.Resources
 import android.graphics.Color
-import android.util.Log
 import android.view.Gravity
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.mygamecompany.kotlinchat.R
+import com.mygamecompany.kotlinchat.data.Repository.TAG
 import timber.log.Timber
 
-class MessageLayoutCreator(private val context: Context)
-{
-    //FUNCTIONS
-    fun createMessage(message: String, sender: Boolean): TextView
-    {
-        val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Timber.d("$methodName: ")
+object MessageLayoutCreator {
+    //VARIABLES
+    private lateinit var context: Context
 
+    //FUNCTIONS
+    fun initializeLayoutCreator(context: Context) {
+        Timber.d("$TAG: initializeLayoutCreator:")
+        this.context = context
+    }
+
+    fun createMessage(message: String, sender: Boolean): TextView {
+        Timber.d("$TAG: createMessage: sender=$sender")
         val newView = TextView(context)
-        with(newView)
-        {
+        with(newView) {
             text = message
-            textSize = 17.toFloat()
-            setPadding(20, 10, 20, 10)
-            layoutParams = when(sender)
-            {
-                true ->
-                {
+            textSize = resources.getDimension(R.dimen.message_text_size)
+            val horizontalPadding: Int = resources.getDimension(R.dimen.message_padding_horizontal).toInt()
+            val verticalPadding: Int = resources.getDimension(R.dimen.message_padding_vertical).toInt()
+            setPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding)
+            layoutParams = when(sender) {
+                true -> {
                     setBackgroundResource(R.drawable.my_message)
                     setTextColor(Color.WHITE)
-                    createMessageLayoutParams(sender)
+                    createMessageLayoutParams(sender, resources)
                 }
-                false ->
-                {
-                    setBackgroundResource(R.drawable.outer_message)
+                false -> {
+                    setBackgroundResource(R.drawable.not_my_message)
                     setTextColor(Color.BLACK)
-                    createMessageLayoutParams(sender)
+                    createMessageLayoutParams(sender, resources)
                 }
             }
         }
         return newView
     }
 
-    fun createConnectionMessage(address: String, connected: Boolean): TextView
-    {
-        val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Timber.d("$methodName: ")
-
-        val newView = TextView(context)
-        with(newView)
-        {
-            textSize = 17.toFloat()
-            setTextColor(Color.WHITE)
-            setPadding(20, 10 ,20 ,10)
-            layoutParams = createConnectionMessageLayoutParams()
-            setBackgroundResource(R.drawable.connection_message)
-            text = when(connected)
-            {
-                true -> "Connected to: $address"
-                false -> "Disconnected with: $address"
-            }
-        }
-        return newView
-    }
-
-    private fun createMessageLayoutParams(sender: Boolean): LinearLayout.LayoutParams
-    {
-        val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Timber.d("$methodName: ")
-
-        val layoutParams : LinearLayout.LayoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
-        layoutParams.setMargins(15, 15, 15, 15)
-        layoutParams.gravity = when(sender)
-        {
-            true -> Gravity.END
-            false -> Gravity.START
-        }
+    private fun createMessageLayoutParams(sender: Boolean, resources: Resources): LinearLayout.LayoutParams {
+        Timber.d("$TAG: createMessageLayoutParams: sender=$sender")
+        val layoutParams: LinearLayout.LayoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+        val margin: Int = resources.getDimension(R.dimen.message_margin).toInt()
+        layoutParams.setMargins(margin, margin, margin, margin)
+        layoutParams.gravity = if(sender) Gravity.END
+        else Gravity.START
         return layoutParams
     }
 
-    private fun createConnectionMessageLayoutParams(): LinearLayout.LayoutParams
-    {
-        val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-        Timber.d("$methodName: ")
+    fun createConnectionMessage(username: String, connected: Boolean): TextView {
+        Timber.d("$TAG: createConnectionMessage: connected=$connected")
+        val newView = TextView(context)
+        with(newView) {
+            textSize = resources.getDimension(R.dimen.message_text_size)
+            val horizontalPadding: Int = resources.getDimension(R.dimen.message_padding_horizontal).toInt()
+            val verticalPadding: Int = resources.getDimension(R.dimen.message_padding_vertical).toInt()
+            setTextColor(Color.WHITE)
+            setPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding)
+            layoutParams = createConnectionMessageLayoutParams(resources)
+            setBackgroundResource(R.drawable.connection_message)
+            text = if (connected) username + resources.getString(R.string.fchat_connection_message)
+            else username + resources.getString(R.string.fchat_disconnection_message)
+        }
+        return newView
+    }
 
-        val layoutParams : LinearLayout.LayoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
-        layoutParams.setMargins(15, 15, 15, 15)
+    private fun createConnectionMessageLayoutParams(resources: Resources): LinearLayout.LayoutParams {
+        Timber.d("$TAG: createConnectionMessageLayoutParams:")
+        val layoutParams: LinearLayout.LayoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+        val margin: Int = resources.getDimension(R.dimen.message_margin).toInt()
+        layoutParams.setMargins(margin, margin, margin, margin)
         layoutParams.gravity = Gravity.CENTER
         return layoutParams
-    }
-
-    companion object
-    {
-        private var instance: MessageLayoutCreator? = null
-
-        fun createInstance(context: Context)
-        {
-            val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-            Timber.d("$methodName: ")
-
-            instance = MessageLayoutCreator(context)
-        }
-
-        fun getInstance(): MessageLayoutCreator
-        {
-            val methodName: String = object {}.javaClass.enclosingMethod?.name ?: "unknown name"
-            Timber.d("$methodName: ")
-
-            return instance!!
-        }
     }
 }
