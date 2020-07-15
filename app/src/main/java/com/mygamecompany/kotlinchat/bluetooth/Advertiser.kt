@@ -56,27 +56,27 @@ class Advertiser(private val bluetoothAdapter: BluetoothAdapter) {
         else Timber.d("Advertiser created.")
     }
 
-    private fun startAdvertiser() {
-        Timber.d("Starting advertising...")
+    private fun startAdvertisement() {
+        Timber.d("Starting advertisement...")
         if (leAdvertiser != null) {
             leAdvertiser?.startAdvertising(buildAdvertiseSettings(), buildAdvertiseData(), buildScanResponseData(), advertiseCallback )
-            Timber.d("Advertising started.")
+            Timber.d("Advertisement started.")
         }
-        else Timber.d("Could not start advertising. Advertiser not created.")
+        else Timber.d("Could not start advertisement. Advertiser not created.")
     }
 
-    private fun stopAdvertiser() {
-        Timber.d("Stopping advertising...")
+    private fun stopAdvertisement() {
+        Timber.d("Stopping advertisement...")
         if (leAdvertiser != null) {
             leAdvertiser?.stopAdvertising(advertiseCallback)
-            Timber.d("Advertising stopped.")
-        } else Timber.d("There is no need to stop advertising.")
+            Timber.d("Advertisement stopped.")
+        } else Timber.d("There is no need to stop advertisement.")
     }
 
     fun startAdvertising() {
         if (leAdvertiser == null) createAdvertiser()
-        startAdvertiser()
+        startAdvertisement()
     }
 
-    fun stopAdvertising() = stopAdvertiser()
+    fun stopAdvertising() = stopAdvertisement()
 }
