@@ -7,21 +7,20 @@ import android.view.Gravity
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.mygamecompany.kotlinchat.R
-import com.mygamecompany.kotlinchat.data.Repository.TAG
 import timber.log.Timber
 
 object MessageLayoutCreator {
     //VARIABLES
-    private lateinit var context: Context
+    private var context: Context? = null
 
     //FUNCTIONS
     fun initializeLayoutCreator(context: Context) {
-        Timber.d("$TAG: initializeLayoutCreator:")
+        Timber.d("initializeLayoutCreator")
         this.context = context
     }
 
     fun createMessage(message: String, sender: Boolean): TextView {
-        Timber.d("$TAG: createMessage: sender=$sender")
+        Timber.d("createMessage: sender=$sender")
         val newView = TextView(context)
         with(newView) {
             text = message
@@ -41,12 +40,12 @@ object MessageLayoutCreator {
                     createMessageLayoutParams(sender, resources)
                 }
             }
+            return this
         }
-        return newView
     }
 
     private fun createMessageLayoutParams(sender: Boolean, resources: Resources): LinearLayout.LayoutParams {
-        Timber.d("$TAG: createMessageLayoutParams: sender=$sender")
+        Timber.d("createMessageLayoutParams: sender=$sender")
         val layoutParams: LinearLayout.LayoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
         val margin: Int = resources.getDimension(R.dimen.message_margin).toInt()
         layoutParams.setMargins(margin, margin, margin, margin)
@@ -56,7 +55,7 @@ object MessageLayoutCreator {
     }
 
     fun createConnectionMessage(username: String, connected: Boolean): TextView {
-        Timber.d("$TAG: createConnectionMessage: connected=$connected")
+        Timber.d("createConnectionMessage: connected=$connected")
         val newView = TextView(context)
         with(newView) {
             textSize = resources.getDimension(R.dimen.message_text_size)
@@ -73,7 +72,7 @@ object MessageLayoutCreator {
     }
 
     private fun createConnectionMessageLayoutParams(resources: Resources): LinearLayout.LayoutParams {
-        Timber.d("$TAG: createConnectionMessageLayoutParams:")
+        Timber.d("createConnectionMessageLayoutParams:")
         val layoutParams: LinearLayout.LayoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
         val margin: Int = resources.getDimension(R.dimen.message_margin).toInt()
         layoutParams.setMargins(margin, margin, margin, margin)

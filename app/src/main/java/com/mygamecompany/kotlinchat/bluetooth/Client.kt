@@ -73,7 +73,7 @@ class Client(bluetoothAdapter : BluetoothAdapter, context : Context): ChatDevice
     private var clientGatt : BluetoothGatt? = null
 
     //FUNCTIONS
-    override fun runDevice(enable: Boolean) {
+    override fun runBluetoothDevice(enable: Boolean) {
         Timber.d("$TAG: runDevice: enable=$enable")
         if(enable) scanner.startScanning()
         else scanner.stopScanning()

@@ -32,9 +32,9 @@ class RoomFragment : Fragment() {
             Timber.d("$TAG: searchRoom: onClick: ")
             with(Repository) {
                 username = usernameInput.text.toString()
-                runDevice(false)
+                runBluetoothDevice(false)
                 isServer = false
-                runDevice(true)
+                runBluetoothDevice(true)
             }
             findNavController().navigate(R.id.action_roomFragment_to_chatFragment)
         }
@@ -43,9 +43,9 @@ class RoomFragment : Fragment() {
             Timber.d("$TAG: startRoom: onClick: ")
             with(Repository) {
                 username = usernameInput.text.toString()
-                runDevice(false)
+                runBluetoothDevice(false)
                 isServer = true
-                runDevice(true)
+                runBluetoothDevice(true)
             }
             findNavController().navigate(R.id.action_roomFragment_to_chatFragment)
         }
