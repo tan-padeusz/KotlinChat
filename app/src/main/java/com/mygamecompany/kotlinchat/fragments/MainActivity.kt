@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import com.mygamecompany.kotlinchat.R
-import com.mygamecompany.kotlinchat.data.Repository.TAG
 import com.mygamecompany.kotlinchat.utilities.MessageLayoutCreator
 import timber.log.Timber
 
@@ -18,7 +17,7 @@ class MainActivity : AppCompatActivity() {
     //FUNCTIONS
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Timber.d("$TAG: onCreate:")
+        Timber.d("onCreate:")
         setContentView(R.layout.activity_main)
         initializeLayoutCreator(applicationContext)
         initializeFragments()
@@ -26,19 +25,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initializeLayoutCreator(context: Context) {
-        Timber.d("$TAG: initializeLayoutCreator")
+        Timber.d("initializeLayoutCreator")
         MessageLayoutCreator.initializeLayoutCreator(context)
     }
 
     private fun initializeFragments() {
-        Timber.d("$TAG: initializeFragments:")
+        Timber.d("initializeFragments:")
         startFragment = StartFragment()
         roomFragment = RoomFragment()
         chatFragment = ChatFragment()
     }
 
     private fun disableScreenTimeout() {
-        Timber.d("$TAG: disableScreenTimeout:")
+        Timber.d("disableScreenTimeout:")
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 }
