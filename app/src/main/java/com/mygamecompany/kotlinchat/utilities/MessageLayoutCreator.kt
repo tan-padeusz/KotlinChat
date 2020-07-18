@@ -15,14 +15,12 @@ object MessageLayoutCreator {
 
     //FUNCTIONS
     fun initializeLayoutCreator(context: Context) {
-        Timber.d("initializeLayoutCreator")
         this.context = context
     }
 
     fun createMessage(message: String, sender: Boolean): TextView {
-        Timber.d("createMessage: sender=$sender")
-        val newView = TextView(context)
-        with(newView) {
+        Timber.d("Creating message... Is sender?: $sender")
+        return TextView(context).apply {
             text = message
             textSize = resources.getDimension(R.dimen.message_text_size)
             val horizontalPadding: Int = resources.getDimension(R.dimen.message_padding_horizontal).toInt()
@@ -40,37 +38,32 @@ object MessageLayoutCreator {
                     createMessageLayoutParams(sender, resources)
                 }
             }
-            return this
         }
     }
 
     private fun createMessageLayoutParams(sender: Boolean, resources: Resources): LinearLayout.LayoutParams {
-        Timber.d("createMessageLayoutParams: sender=$sender")
-        val layoutParams: LinearLayout.LayoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
-        val margin: Int = resources.getDimension(R.dimen.message_margin).toInt()
-        layoutParams.setMargins(margin, margin, margin, margin)
-        layoutParams.gravity = if(sender) Gravity.END
-        else Gravity.START
-        return layoutParams
-    }
-
-    fun createConnectionMessage(message: String): TextView {
-        val newView = TextView(context)
-        with(newView) {
-            textSize = resources.getDimension(R.dimen.message_text_size)
-            val horizontalPadding: Int = resources.getDimension(R.dimen.message_padding_horizontal).toInt()
-            val verticalPadding: Int = resources.getDimension(R.dimen.message_padding_vertical).toInt()
-            setTextColor(Color.WHITE)
-            setPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding)
-            layoutParams = createConnectionMessageLayoutParams(resources)
-            setBackgroundResource(R.drawable.connection_message)
-            text = message
-            return this
+        return LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
+            val margin: Int = resources.getDimension(R.dimen.message_margin).toInt()
+            setMargins(margin, margin, margin, margin)
+            gravity = if (sender) Gravity.END else Gravity.START
         }
     }
 
+    fun createConnectionMessage(message: String): TextView {
+        Timber.d("Creating connection message...")
+        return TextView(context).apply {
+                textSize = resources.getDimension(R.dimen.message_text_size)
+                setTextColor(Color.WHITE)
+                val horizontalPadding: Int = resources.getDimension(R.dimen.message_padding_horizontal).toInt()
+                val verticalPadding: Int = resources.getDimension(R.dimen.message_padding_vertical).toInt()
+                setPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding)
+                layoutParams = createConnectionMessageLayoutParams(resources)
+                setBackgroundResource(R.drawable.connection_message)
+                text = message
+            }
+    }
+
     private fun createConnectionMessageLayoutParams(resources: Resources): LinearLayout.LayoutParams {
-        Timber.d("createConnectionMessageLayoutParams:")
         val layoutParams: LinearLayout.LayoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
         val margin: Int = resources.getDimension(R.dimen.message_margin).toInt()
         layoutParams.setMargins(margin, margin, margin, margin)
