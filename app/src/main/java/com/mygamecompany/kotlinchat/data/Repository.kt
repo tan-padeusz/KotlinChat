@@ -1,12 +1,10 @@
 package com.mygamecompany.kotlinchat.data
 
 import android.bluetooth.BluetoothAdapter
-import android.bluetooth.le.ScanResult
 import android.content.Context
 import android.os.ParcelUuid
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import com.mygamecompany.kotlinchat.bluetooth.Client
 import com.mygamecompany.kotlinchat.bluetooth.Server
 import com.mygamecompany.kotlinchat.interfaces.ChatDevice
@@ -39,9 +37,9 @@ object Repository : ChatDevice {
         else client!!.sendMessage(message)
     }
 
-    override fun receiveMessage(): LiveData<String> {
-        return if (isServer) server!!.receiveMessage()
-        else client!!.receiveMessage()
+    override fun getLastMessage(): LiveData<String> {
+        return if (isServer) server!!.getLastMessage()
+        else client!!.getLastMessage()
     }
 
     fun observeScanResult() {

@@ -34,13 +34,11 @@ class ChatFragment : Fragment()
         binding.addressLabelText = "My name: ${Repository.username}"
         binding.addressLabel.visibility = View.VISIBLE
 
-        Repository.receiveMessage().observe(viewLifecycleOwner, Observer {
+        Repository.getLastMessage().observe(viewLifecycleOwner, Observer {
             Timber.d("receiveMessageObserver: received message: ${it[0]}")
             when(it[0]) {
-                Constants.TEXT_MESSAGE_SENDER -> binding.messageView.addView(MessageLayoutCreator.createMessage(it.removeRange(0, 1), true))
-                Constants.TEXT_MESSAGE_RECEIVER -> binding.messageView.addView(MessageLayoutCreator.createMessage(it.removeRange(0, 1), false))
-                Constants.CONNECTION_MESSAGE -> binding.messageView.addView(MessageLayoutCreator.createConnectionMessage(it.removeRange(0,1), true))
-                Constants.DISCONNECTION_MESSAGE -> binding.messageView.addView(MessageLayoutCreator.createConnectionMessage(it.removeRange(0,1), false))
+                Constants.TEXT_MESSAGE -> binding.messageView.addView(MessageLayoutCreator.createMessage(it.removeRange(0, 1), false))
+                Constants.CONNECTION_MESSAGE -> binding.messageView.addView(MessageLayoutCreator.createConnectionMessage(it.removeRange(0,1)))
                 else -> { }
             }
         })
@@ -57,6 +55,7 @@ class ChatFragment : Fragment()
         sendButton.setOnClickListener {
             Timber.d("sendButton: onClick:")
             if((inputText.text != null) and (inputText.text.toString() != "")) {
+                binding.messageView.addView(MessageLayoutCreator.createMessage(inputText.text.toString(), true))
                 Repository.sendMessage(inputText.text.toString())
                 inputText.text.clear()
             }

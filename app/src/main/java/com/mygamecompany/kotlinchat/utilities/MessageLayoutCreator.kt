@@ -54,8 +54,7 @@ object MessageLayoutCreator {
         return layoutParams
     }
 
-    fun createConnectionMessage(username: String, connected: Boolean): TextView {
-        Timber.d("createConnectionMessage: connected=$connected")
+    fun createConnectionMessage(message: String): TextView {
         val newView = TextView(context)
         with(newView) {
             textSize = resources.getDimension(R.dimen.message_text_size)
@@ -65,10 +64,9 @@ object MessageLayoutCreator {
             setPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding)
             layoutParams = createConnectionMessageLayoutParams(resources)
             setBackgroundResource(R.drawable.connection_message)
-            text = if (connected) username + resources.getString(R.string.fchat_connection_message)
-            else username + resources.getString(R.string.fchat_disconnection_message)
+            text = message
+            return this
         }
-        return newView
     }
 
     private fun createConnectionMessageLayoutParams(resources: Resources): LinearLayout.LayoutParams {

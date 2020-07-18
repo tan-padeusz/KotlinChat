@@ -2,12 +2,15 @@ package com.mygamecompany.kotlinchat.bluetooth
 
 import android.bluetooth.*
 import android.content.Context
+import android.net.Uri
+import android.util.Range
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.mygamecompany.kotlinchat.data.Repository
 import com.mygamecompany.kotlinchat.interfaces.ChatDevice
 import com.mygamecompany.kotlinchat.utilities.*
 import timber.log.Timber
+import java.awt.font.NumericShaper
 import java.util.*
 
 class Server(bluetoothAdapter : BluetoothAdapter, private val context : Context): ChatDevice {
@@ -46,17 +49,25 @@ class Server(bluetoothAdapter : BluetoothAdapter, private val context : Context)
             Timber.d("Received characteristic write request.")
             val message = String(value!!)
             val status: Int = when(message[0]) {
-                Constants.TEXT_MESSAGE_RECEIVER -> Constants.TEXT_MESSAGE_STATUS
-                Constants.CONNECTION_MESSAGE -> Constants.CONNECTION_MESSAGE_STATUS
-                Constants.DISCONNECTION_MESSAGE -> Constants.DISCONNECTION_MESSAGE_STATUS
+                Constants.TEXT_MESSAGE -> {
+                    lastMessage.postValue(message.removeRange(0, 1))
+                    Constants.TEXT_MESSAGE_STATUS
+                }
+                Constants.CONNECTION_MESSAGE -> {
+                    lastConnectionMessage.postValue(message.removeRange(0, 1))
+                    Constants.CONNECTION_MESSAGE_STATUS
+                }
+                Constants.IMAGE_URI_MESSAGE -> {
+                    lastImageUri.postValue(Uri.parse(message.removeRange(0, 1)))
+                    Constants.IMAGE_URI_MESSAGE_STATUS
+                }
                 else -> Constants.OTHER_MESSAGE_STATUS
             }
             Timber.d("Write characteristic value changed. Status: $status. Message: ${message.removeRange(0, 0)}")
-            lastMessage.postValue(message.removeRange(0, 0))
             val readCharacteristic: BluetoothGattCharacteristic = gattServer!!.getService(Constants.SERVICE_UUID).getCharacteristic(Constants.READ_CHARACTERISTIC_UUID)
             readCharacteristic.setValue(message)
             for (client in connectedDevices) if (client.address != device?.address) notifyDevice(client, readCharacteristic)
-            if(responseNeeded) gattServer!!.sendResponse(device, requestId, status, offset, byteArrayOf(1))
+            if (responseNeeded) gattServer!!.sendResponse(device, requestId, status, offset, byteArrayOf(1))
         }
 
         override fun onMtuChanged(device: BluetoothDevice?, mtu: Int) {
@@ -65,10 +76,12 @@ class Server(bluetoothAdapter : BluetoothAdapter, private val context : Context)
         }
     }
 
-    //CONSTANTS
+    //VALUES
     private val advertiser: Advertiser = Advertiser(bluetoothAdapter)
-    private val connectedDevices: LinkedList<BluetoothDevice> = LinkedList()
+    private val connectedDevices: ArrayList<BluetoothDevice> = ArrayList()
     private val lastMessage: MutableLiveData<String> = MutableLiveData()
+    private val lastConnectionMessage: MutableLiveData<String> = MutableLiveData()
+    private val lastImageUri: MutableLiveData<Uri> = MutableLiveData()
 
     //VARIABLES
     private var gattServer: BluetoothGattServer? = null
@@ -76,18 +89,19 @@ class Server(bluetoothAdapter : BluetoothAdapter, private val context : Context)
     //FUNCTIONS
     override fun runBluetoothDevice(run: Boolean) = if (run) startServer() else stopServer()
     fun enableAdvertising(enable: Boolean) = if (enable) advertiser.startAdvertising() else advertiser.stopAdvertising()
+    override fun getLastMessage(): LiveData<String> = lastMessage
+    override fun getLastConnectionMessage(): LiveData<String> = lastConnectionMessage
+    override fun getLastImageUri(): LiveData<Uri> = lastImageUri
 
     override fun sendMessage(message: String) {
         Timber.d("Sending message: $message.")
-        val fullMessage = "${Repository.username}:\n${message}"
-        lastMessage.postValue(Constants.TEXT_MESSAGE_SENDER + fullMessage)
         val characteristic = gattServer!!.getService(Constants.SERVICE_UUID).getCharacteristic(Constants.READ_CHARACTERISTIC_UUID)
-        characteristic.setValue(Constants.TEXT_MESSAGE_RECEIVER + fullMessage)
+        characteristic.setValue("${Constants.TEXT_MESSAGE}${Repository.username}:\n${message}")
         for(device in connectedDevices) notifyDevice(device, characteristic)
     }
 
-    override fun receiveMessage(): LiveData<String> {
-        return lastMessage
+    override fun sendConnectionMessage(connected: Boolean) {
+        TODO("Not implemented.")
     }
 
     private fun startServer() {
@@ -108,10 +122,6 @@ class Server(bluetoothAdapter : BluetoothAdapter, private val context : Context)
             gattServer = null
         }
         else Timber.d("There is no need to stop server...")
-    }
-
-    private fun notifyDevice(client: BluetoothDevice, characteristic: BluetoothGattCharacteristic) {
-        gattServer!!.notifyCharacteristicChanged(client, characteristic, true)
     }
 
     private fun createService(): BluetoothGattService {
@@ -139,5 +149,9 @@ class Server(bluetoothAdapter : BluetoothAdapter, private val context : Context)
             BluetoothGattCharacteristic.PROPERTY_WRITE,
             BluetoothGattCharacteristic.PERMISSION_WRITE
         )
+    }
+
+    private fun notifyDevice(client: BluetoothDevice, characteristic: BluetoothGattCharacteristic) {
+        gattServer!!.notifyCharacteristicChanged(client, characteristic, true)
     }
 }
