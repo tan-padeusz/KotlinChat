@@ -1,23 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:app="http://schemas.android.com/apk/res-auto"
+<layout
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    tools:context=".fragments.StartFragment">
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        tools:context=".fragments.MenuFragment"
+        android:padding="@dimen/layout_padding">
 
         <EditText
             android:id="@+id/usernameInput"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:inputType="textPersonName"
-            android:hint="@string/froom_usernameHint"
+            android:hint="@string/fmenu_usernameHint"
+            android:autofillHints="@string/fmenu_usernameHint"
             app:layout_constraintBottom_toTopOf="@+id/upperGuideline"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"/>
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/upperGuideline"
@@ -37,7 +41,7 @@
             android:id="@+id/searchRoom"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:text="@string/froom_searchRoomText"
+            android:text="@string/fmenu_searchRoomText"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/joinRoom"
             app:layout_constraintTop_toBottomOf="@id/lowerGuideline"
@@ -48,7 +52,7 @@
             android:id="@+id/joinRoom"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:text="@string/froom_joinRoomText"
+            android:text="@string/fmenu_joinRoomText"
             android:visibility="gone"
             app:layout_constraintStart_toEndOf="@id/searchRoom"
             app:layout_constraintEnd_toStartOf="@id/startRoom"
@@ -60,7 +64,7 @@
             android:id="@+id/startRoom"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:text="@string/froom_startRoomText"
+            android:text="@string/fmenu_startRoomText"
             app:layout_constraintStart_toEndOf="@id/joinRoom"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/lowerGuideline"

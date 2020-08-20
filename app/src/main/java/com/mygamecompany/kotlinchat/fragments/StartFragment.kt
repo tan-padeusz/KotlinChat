@@ -1,126 +1,60 @@
 package com.mygamecompany.kotlinchat.fragments
 
-import android.Manifest
-import android.app.Activity
-import android.bluetooth.BluetoothAdapter
-import android.content.Context
-import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.mygamecompany.kotlinchat.R
-import com.mygamecompany.kotlinchat.data.Repository.TAG
-import kotlinx.android.synthetic.main.fragment_start.*
-import timber.log.Timber
-import java.util.*
+import com.mygamecompany.kotlinchat.databinding.FragmentStartBinding
+import com.mygamecompany.kotlinchat.utilities.PermissionHandler
+import java.util.Timer
+import java.util.TimerTask
 
-class StartFragment : Fragment()
-{
-    //CONSTANTS
-    private val bluetoothAdapter: BluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
-    private val bluetoothRequestPermission: Int = 1
-    private val locationRequestPermission: Int = 2
+const val DELAY_TIME: Long = 2250
+
+class StartFragment: Fragment() {
+    //VALUES
     private val timer: Timer = Timer("delay_start")
+    private val showViews: MutableLiveData<Boolean> = MutableLiveData(false)
 
     //VARIABLES
-    private var isBluetoothEnabled: Boolean = false
-    private var isLocationEnabled: Boolean = false
+    private lateinit var binding: FragmentStartBinding
 
     //FUNCTIONS
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        Timber.d("$TAG: onCreateView:")
-        return inflater.inflate(R.layout.fragment_start, container, false)
+        binding = FragmentStartBinding.inflate(inflater, container, false)
+        setListeners()
+        setTimer()
+        return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        Timber.d("$TAG: onViewCreated:")
-        timer.schedule(object : TimerTask() {
+    private fun setTimer() {
+        timer.schedule(object: TimerTask() {
             override fun run() {
-                delayedStartAction()
+                showViews.postValue(true)
             }
-        }, 2250)
-
-        requestButton.setOnClickListener {
-            Timber.d("$TAG: requestButton: onClick:")
-            setPermissionFlags()
-            sendPermissionRequests()
-        }
+        }, DELAY_TIME)
     }
 
-    private fun delayedStartAction() {
-        Timber.d("$TAG: delayedStartAction:")
-        setPermissionFlags()
-        if(checkPermissions()) navigate()
-        else sendPermissionRequests()
+    private fun showViews(show: Boolean) {
+        binding.infoLabelUpper.visibility = if (show) View.VISIBLE else View.GONE
+        binding.infoLabelLower.visibility = if (show) View.VISIBLE else View.GONE
+        binding.requestButton.visibility = if (show) View.VISIBLE else View.GONE
     }
 
-    private fun checkPermissions(): Boolean {
-        Timber.d("$TAG: checkPermissions:")
-        return isBluetoothEnabled and isLocationEnabled
-    }
-
-    private fun sendPermissionRequests() {
-        Timber.d("$TAG: sendPermissionRequests:")
-        if (!isBluetoothEnabled) {
-            Timber.d("$TAG: sendPermissionRequests: requesting bluetooth:")
-            startActivityForResult(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE), bluetoothRequestPermission)
+    private fun setListeners() {
+        binding.requestButton.setOnClickListener {
+            PermissionHandler.setFlags()
+            if (PermissionHandler.status.value!!) findNavController().navigate(R.id.action_startFragment_to_menuFragment)
+            else PermissionHandler.requestPermissions()
         }
 
-        if (!isLocationEnabled) {
-            Timber.d("$TAG: sendPermissionRequests: requesting location:")
-            requestPermissions(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION), locationRequestPermission)
-        }
-    }
-
-    private fun setPermissionFlags() {
-        Timber.d("$TAG: setPermissionFlags:")
-        isBluetoothEnabled = bluetoothAdapter.isEnabled
-        isLocationEnabled = ((ContextCompat.checkSelfPermission(activity as Context,Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
-        and (ContextCompat.checkSelfPermission(activity as Context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED))
-    }
-
-    private fun navigate() {
-        Timber.d("$TAG: navigate:")
-        findNavController().navigate(R.id.action_startFragment_to_roomFragment)
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        Timber.d("$TAG: onActivityResult:")
-        if (requestCode == bluetoothRequestPermission) {
-            if (resultCode == Activity.RESULT_OK) {
-                Timber.d("$TAG: onActivityResult: Bluetooth enabled:")
-                isBluetoothEnabled = true
-                if(isLocationEnabled) navigate()
-            }
-            else {
-                Timber.d("$TAG: onActivityResult: Bluetooth not enabled:")
-                requestLabel.visibility = View.VISIBLE
-                requestButton.visibility = View.VISIBLE
-            }
-        }
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        Timber.d("$TAG: onRequestPermissionsResult:")
-        if (requestCode == locationRequestPermission) {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Timber.d("$TAG: onRequestPermissionsResult: location enabled:")
-                isLocationEnabled = true
-                if (isBluetoothEnabled) navigate()
-            }
-            else {
-                Timber.d("$TAG: onRequestPermissionsResult: location not enabled:")
-                requestLabel.visibility = View.VISIBLE
-                requestButton.visibility = View.VISIBLE
-            }
-        }
+        showViews.observe(viewLifecycleOwner, Observer {
+            showViews(it)
+        })
     }
 }

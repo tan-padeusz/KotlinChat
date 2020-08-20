@@ -1,44 +1,55 @@
 package com.mygamecompany.kotlinchat.fragments
 
+import android.bluetooth.BluetoothAdapter
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.location.LocationManager
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import com.mygamecompany.kotlinchat.R
-import com.mygamecompany.kotlinchat.data.Repository.TAG
 import com.mygamecompany.kotlinchat.utilities.MessageLayoutCreator
-import timber.log.Timber
+import com.mygamecompany.kotlinchat.utilities.PermissionHandler
 
 class MainActivity : AppCompatActivity() {
-    //VARIABLES
-    private lateinit var startFragment: StartFragment
-    private lateinit var roomFragment: RoomFragment
-    private lateinit var chatFragment: ChatFragment
-
-    //FUNCTIONS
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Timber.d("$TAG: onCreate:")
-        setContentView(R.layout.activity_main)
-        initializeLayoutCreator(applicationContext)
-        initializeFragments()
+        disableActionBar()
         disableScreenTimeout()
+        setContentView(R.layout.activity_main)
+        initializeLayoutCreator(this)
+        createAndRegisterPermissionHandler()
     }
 
-    private fun initializeLayoutCreator(context: Context) {
-        Timber.d("$TAG: initializeLayoutCreator")
-        MessageLayoutCreator.initializeLayoutCreator(context)
-    }
-
-    private fun initializeFragments() {
-        Timber.d("$TAG: initializeFragments:")
-        startFragment = StartFragment()
-        roomFragment = RoomFragment()
-        chatFragment = ChatFragment()
+    private fun disableActionBar() {
+        supportActionBar?.hide()
     }
 
     private fun disableScreenTimeout() {
-        Timber.d("$TAG: disableScreenTimeout:")
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    }
+
+    private fun initializeLayoutCreator(context: Context) {
+        MessageLayoutCreator.initializeLayoutCreator(context)
+    }
+
+    private fun createAndRegisterPermissionHandler() {
+        PermissionHandler.initializePermissionHandler(this)
+        val filter = IntentFilter().apply {
+            addAction(BluetoothAdapter.ACTION_STATE_CHANGED)
+            addAction(LocationManager.PROVIDERS_CHANGED_ACTION)
+        }
+        registerReceiver(PermissionHandler, filter)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        PermissionHandler.onActivityResult(requestCode)
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        PermissionHandler.onRequestPermissionResults(requestCode)
     }
 }

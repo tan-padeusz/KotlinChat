@@ -1,15 +1,13 @@
 package com.mygamecompany.kotlinchat
 
 import android.app.Application
-import com.mygamecompany.kotlinchat.data.Repository
+import com.mygamecompany.kotlinchat.log.DebugTree
 import timber.log.Timber
 
+@Suppress("unused")
 class ChatApp: Application() {
-    private val appTag: String = Repository.TAG
-
     override fun onCreate() {
         super.onCreate()
-        Timber.plant(Timber.DebugTree())
-        Timber.d("$appTag:Timber set up!")
+        Timber.plant(DebugTree())
     }
 }

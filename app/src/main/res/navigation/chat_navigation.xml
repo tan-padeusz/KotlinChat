@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+<navigation
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/chat_navigation"
@@ -8,25 +9,47 @@
     <fragment
         android:id="@+id/startFragment"
         android:name="com.mygamecompany.kotlinchat.fragments.StartFragment"
-        android:label="MainMenu"
+        android:label="Start Fragment"
         tools:layout="@layout/fragment_start">
         <action
-            android:id="@+id/action_startFragment_to_roomFragment"
-            app:destination="@id/roomFragment" />
+            android:id="@+id/action_startFragment_to_menuFragment"
+            app:destination="@id/menuFragment" />
     </fragment>
+
     <fragment
-        android:id="@+id/roomFragment"
-        android:name="com.mygamecompany.kotlinchat.fragments.RoomFragment"
-        android:label="Room"
-        tools:layout="@layout/fragment_room">
+        android:id="@+id/menuFragment"
+        android:name="com.mygamecompany.kotlinchat.fragments.MenuFragment"
+        android:label="Menu Fragment"
+        tools:layout="@layout/fragment_menu">
         <action
-            android:id="@+id/action_roomFragment_to_chatFragment"
+            android:id="@+id/action_menuFragment_to_roomsFragment"
+            app:destination="@id/roomsFragment" />
+        <action
+            android:id="@+id/action_menuFragment_to_chatFragment"
             app:destination="@id/chatFragment" />
     </fragment>
+
+    <fragment
+        android:id="@+id/roomsFragment"
+        android:name="com.mygamecompany.kotlinchat.fragments.RoomsFragment"
+        android:label="Rooms Fragment"
+        tools:layout="@layout/fragment_rooms" >
+        <action
+            android:id="@+id/action_roomsFragment_to_menuFragment"
+            app:destination="@id/menuFragment" />
+        <action
+            android:id="@+id/action_roomsFragment_to_chatFragment"
+            app:destination="@id/chatFragment" />
+    </fragment>
+
     <fragment
         android:id="@+id/chatFragment"
         android:name="com.mygamecompany.kotlinchat.fragments.ChatFragment"
-        android:label="fragment_chat"
-        tools:layout="@layout/fragment_chat" />
+        android:label="Chat Fragment"
+        tools:layout="@layout/fragment_chat" >
+        <action
+            android:id="@+id/action_chatFragment_to_menuFragment"
+            app:destination="@id/menuFragment" />
+    </fragment>
 
 </navigation>
