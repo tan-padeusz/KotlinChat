@@ -9,6 +9,5 @@ class ChatApp: Application() {
     override fun onCreate() {
         super.onCreate()
         Timber.plant(DebugTree())
-        Timber.d("Timber set up!")
     }
 }

@@ -24,16 +24,16 @@ class ChatRoomAdapter(private val clickListener: ChatRoomClickListener): ListAda
 
 class ChatRoomDataBindingViewHolder(private val binding: ViewDataBinding): RecyclerView.ViewHolder(binding.root) {
     fun bind(position: Int, chatRoom: ChatRoom, clickListener: ChatRoomClickListener) {
-        binding.setVariable(BR.position, position)
+        binding.setVariable(BR.chatRoomPosition, position)
         binding.setVariable(BR.chatRoomItem, chatRoom)
         binding.executePendingBindings()
-        binding.setVariable(BR.itemClickListener, clickListener)
+        binding.setVariable(BR.chatRoomClickListener, clickListener)
     }
 }
 
 class ChatRoomDiffCallback: DiffUtil.ItemCallback<ChatRoom>() {
     override fun areItemsTheSame(oldItem: ChatRoom, newItem: ChatRoom): Boolean {
-        return oldItem.address == newItem.address && oldItem.roomName == newItem.roomName
+        return oldItem.device == newItem.device && oldItem.roomName == newItem.roomName
     }
 
     override fun areContentsTheSame(oldItem: ChatRoom, newItem: ChatRoom): Boolean {

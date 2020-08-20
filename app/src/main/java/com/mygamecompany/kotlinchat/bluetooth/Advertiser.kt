@@ -31,12 +31,16 @@ class Advertiser(private val bluetoothAdapter: BluetoothAdapter) {
     //FUNCTIONS
     private fun buildAdvertiseSettings(): AdvertiseSettings {
         Timber.d("Building advertise settings...")
-        return AdvertiseSettings.Builder().build()
+        return AdvertiseSettings
+            .Builder()
+            .setConnectable(true)
+            .build()
     }
 
     private fun buildAdvertiseData(): AdvertiseData {
         Timber.d("Building advertise data...")
-        return AdvertiseData.Builder()
+        return AdvertiseData
+            .Builder()
             .addServiceUuid(ParcelUuid(Constants.SERVICE_UUID))
             .setIncludeDeviceName(false)
             .build()
@@ -44,7 +48,8 @@ class Advertiser(private val bluetoothAdapter: BluetoothAdapter) {
 
     private fun buildScanResponseData(): AdvertiseData {
         Timber.d("Building scan response data...")
-        return AdvertiseData.Builder()
+        return AdvertiseData
+            .Builder()
             .addServiceData(ParcelUuid(Constants.SERVICE_UUID), Repository.username.take(8).toByteArray(Charsets.UTF_8))
             .build()
     }

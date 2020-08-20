@@ -8,62 +8,76 @@
         android:id="@+id/layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/colorPrimary"
         tools:context=".fragments.StartFragment">
 
         <TextView
-            android:id="@+id/greetingLabel"
+            android:id="@+id/greetings_label"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:text="@string/fstart_greetingLabelText"
+            android:text="@string/fstart_greetings_label_text"
+            android:textSize="@dimen/greetings_text_size"
             android:textColor="@android:color/white"
-            android:textSize="20sp"
+            android:background="@color/app_main_color"
             android:gravity="center"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/upperGuideline"/>
+            app:layout_constraintBottom_toTopOf="@id/upper_guideline"/>
 
         <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/upperGuideline"
+            android:id="@+id/upper_guideline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            app:layout_constraintGuide_percent="0.1"/>
-
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/lowerGuideline"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintGuide_percent="0.9"/>
+            app:layout_constraintGuide_percent="0.075"/>
 
         <TextView
-            android:id="@+id/requestLabel"
+            android:id="@+id/info_label_upper"
             android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:text="@string/fstart_requestLabelText"
-            android:textColor="@android:color/white"
-            android:visibility="gone"
+            android:layout_height="wrap_content"
+            android:text="@string/fstart_info_label_upper_text"
+            android:textSize="@dimen/info_text_size"
             android:gravity="center"
-            app:layout_constraintTop_toBottomOf="@id/lowerGuideline"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/requestButton"
-            app:layout_constraintBottom_toBottomOf="parent"/>
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/upper_guideline"
+            app:layout_constraintBottom_toTopOf="@id/lower_guideline"
+            app:layout_constraintVertical_bias="0.1"/>
+
+        <TextView
+            android:id="@+id/info_label_lower"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/fstart_info_label_lower_text"
+            android:textSize="@dimen/info_text_size"
+            android:gravity="center"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/info_label_upper"
+            app:layout_constraintBottom_toTopOf="@id/lower_guideline"
+            app:layout_constraintVertical_bias="0.05"/>
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/lower_guideline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.95"/>
 
         <Button
-            android:id="@+id/requestButton"
+            android:id="@+id/request_button"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:text="@string/fstart_requestButtonText"
+            android:text="@string/fstart_request_button_text"
+            android:textSize="@dimen/button_text_size"
             android:textColor="@android:color/white"
+            android:background="@color/app_main_color"
             android:visibility="gone"
-            android:background="@color/colorPrimaryDark"
             style="@style/Widget.AppCompat.Button.Borderless"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/requestLabel"
-            app:layout_constraintTop_toBottomOf="@id/lowerGuideline"/>
+            app:layout_constraintTop_toBottomOf="@id/lower_guideline"
+            app:layout_constraintBottom_toBottomOf="parent"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

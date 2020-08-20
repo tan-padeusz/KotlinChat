@@ -3,20 +3,13 @@ package com.mygamecompany.kotlinchat.data
 import android.bluetooth.BluetoothAdapter
 import android.content.Context
 import android.net.Uri
-import android.os.ParcelUuid
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import com.mygamecompany.kotlinchat.bluetooth.Client
 import com.mygamecompany.kotlinchat.bluetooth.Server
 import com.mygamecompany.kotlinchat.interfaces.ChatDevice
-import com.mygamecompany.kotlinchat.utilities.Constants
 import timber.log.Timber
 
 object Repository : ChatDevice {
-
-    //VALUES
-    private val roomListLiveData: MutableLiveData<List<ChatRoom>> = MutableLiveData()
-
     //VARIABLES
     var isServer: Boolean = false
     var username: String = ""
@@ -26,10 +19,8 @@ object Repository : ChatDevice {
     //FUNCTIONS
     override fun getLastMessage(): LiveData<String> = if (isServer) server!!.getLastMessage() else client!!.getLastMessage()
     override fun getLastConnectionMessage(): LiveData<String> = if (isServer) server!!.getLastConnectionMessage() else client!!.getLastConnectionMessage()
-    override fun getLastImageUri(): LiveData<Uri> = if (isServer) server!!.getLastImageUri() else client!!.getLastImageUri()
     override fun sendMessage(message: String) = if (isServer) server!!.sendMessage(message) else client!!.sendMessage(message)
     override fun sendConnectionMessage(connected: Boolean) = if (isServer) server!!.sendConnectionMessage(connected) else client!!.sendConnectionMessage(connected)
-    fun getChatRoomList(): LiveData<List<ChatRoom>> = roomListLiveData
 
     fun initializeBluetoothDevices(bluetoothAdapter: BluetoothAdapter, context: Context) {
         client = Client(bluetoothAdapter, context)
@@ -41,19 +32,28 @@ object Repository : ChatDevice {
         else client!!.runBluetoothDevice(run)
     }
 
-    fun observeScanResult() {
-        if(isServer) {
-            Timber.d("Could not observe scan result. Device is server.")
-            return
-        }
-        client!!.getFoundChatRooms().observeForever {
-            val roomList: ArrayList<ChatRoom> = ArrayList()
-            for (result in it) {
-                val address: String = result.device.address
-                val name: String = result.scanRecord?.serviceData?.get(ParcelUuid(Constants.SERVICE_UUID))!!.toString(Charsets.UTF_8)
-                roomList.add(ChatRoom(address, name))
-                roomListLiveData.postValue(roomList)
-            }
-        }
+    fun getFoundChatRooms(): LiveData<ArrayList<ChatRoom>>?  {
+        if (isServer) { Timber.d("Could not get chat rooms. Device is not client."); return null; }
+        return client!!.getFoundChatRooms()
+    }
+
+    fun connectToServer(position: Int) {
+        if (isServer) { Timber.d("Could not connect server device to server."); return; }
+        client!!.connect(position)
+    }
+
+    fun disconnectFromServer() {
+        if (isServer) { Timber.d("Cannot disconnect server from server."); return; }
+        client!!.disconnect(false)
+    }
+
+    fun isConnectedToServer(): LiveData<Boolean>? {
+        if (isServer) { Timber.d("Cannot track server connection status."); return null; }
+        return client!!.isConnected()
+    }
+
+    fun wasForcedConnection(): LiveData<Boolean>? {
+        if (isServer) { Timber.d("Cannot track server connection status."); return null; }
+        return client!!.wasForciblyDisconnected()
     }
 }

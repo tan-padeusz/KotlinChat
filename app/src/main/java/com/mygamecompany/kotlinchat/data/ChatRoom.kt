@@ -1,3 +1,5 @@
 package com.mygamecompany.kotlinchat.data
 
-data class ChatRoom(val address: String, val roomName: String)
+import android.bluetooth.BluetoothDevice
+
+data class ChatRoom(val device: BluetoothDevice, val roomName: String)

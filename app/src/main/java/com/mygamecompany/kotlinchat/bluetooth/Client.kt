@@ -1,27 +1,34 @@
 package com.mygamecompany.kotlinchat.bluetooth
 
 import android.bluetooth.*
-import android.bluetooth.le.ScanResult
 import android.content.Context
 import android.net.Uri
+import android.os.ParcelUuid
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.mygamecompany.kotlinchat.data.ChatRoom
 import com.mygamecompany.kotlinchat.data.Repository
 import com.mygamecompany.kotlinchat.interfaces.ChatDevice
 import com.mygamecompany.kotlinchat.utilities.*
 import timber.log.Timber
 
-class Client(bluetoothAdapter : BluetoothAdapter, private val context : Context): ChatDevice {
-
+class Client(bluetoothAdapter: BluetoothAdapter, private val context: Context): ChatDevice {
     //CLIENT CALLBACK
     private val gattClientCallback : BluetoothGattCallback = object : BluetoothGattCallback() {
 
         override fun onCharacteristicChanged(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?) {
             super.onCharacteristicChanged(gatt, characteristic)
-            val message = String(characteristic!!.value)
-            Timber.d("Received new message: $message")
-            if (message[0] == Constants.CONNECTION_MESSAGE) lastConnectionMessage.postValue(message.takeLast(message.length - 1))
-            else lastMessage.postValue(message)
+            val receivedString = String(characteristic!!.value)
+            if (receivedString.length < 5) { Timber.d("Unknown message."); return; }
+
+            val code = receivedString.take(5)
+            val message = receivedString.drop(5)
+            when (code) {
+                Constants.TEXT_MESSAGE -> dealWithTextMessage(message)
+                Constants.CONNECTION_MESSAGE -> dealWithConnectionMessage(message)
+                Constants.FORCE_DISCONNECTION_MESSAGE -> dealWithForceDisconnectionMessage()
+                else -> dealWithOtherMessage(message)
+            }
         }
 
         override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
@@ -29,11 +36,13 @@ class Client(bluetoothAdapter : BluetoothAdapter, private val context : Context)
             when (newState) {
                 BluetoothProfile.STATE_CONNECTED -> {
                     Timber.d("Connection state changed. New state: SATE_CONNECTED.")
+                    isConnected.postValue(true)
                     gatt?.discoverServices()
                 }
 
                 BluetoothProfile.STATE_DISCONNECTED -> {
                     Timber.d("Connection state changed. New state: STATE_DISCONNECTED.")
+                    isConnected.postValue(false)
                     gatt?.close()
                     clientGatt = null
                 }
@@ -67,9 +76,10 @@ class Client(bluetoothAdapter : BluetoothAdapter, private val context : Context)
     private val scanner: Scanner = Scanner(bluetoothAdapter)
     private val lastMessage: MutableLiveData<String> = MutableLiveData()
     private val lastConnectionMessage: MutableLiveData<String> = MutableLiveData()
-    private val lastImageUri: MutableLiveData<Uri> = MutableLiveData()
-    private val foundChatRooms: ArrayList<ScanResult> = ArrayList()
-    private val foundChatRoomsLiveData: MutableLiveData<ArrayList<ScanResult>> = MutableLiveData()
+    private val foundChatRooms: ArrayList<ChatRoom> = ArrayList()
+    private val foundChatRoomsLiveData: MutableLiveData<ArrayList<ChatRoom>> = MutableLiveData()
+    private val isConnected: MutableLiveData<Boolean> = MutableLiveData(false)
+    private val wasForciblyDisconnected: MutableLiveData<Boolean> = MutableLiveData()
 
     //VARIABLES
     private var writeCharacteristic : BluetoothGattCharacteristic? = null
@@ -79,14 +89,21 @@ class Client(bluetoothAdapter : BluetoothAdapter, private val context : Context)
     override fun runBluetoothDevice(run: Boolean) = if (run) scanner.startScanning() else scanner.stopScanning()
     override fun getLastMessage(): LiveData<String> = lastMessage
     override fun getLastConnectionMessage(): LiveData<String> = lastConnectionMessage
-    override fun getLastImageUri(): LiveData<Uri> = lastImageUri
-    fun getFoundChatRooms(): LiveData<ArrayList<ScanResult>> = foundChatRoomsLiveData
+    fun getFoundChatRooms(): LiveData<ArrayList<ChatRoom>> = foundChatRoomsLiveData
+    fun isConnected(): LiveData<Boolean> = isConnected
+    fun wasForciblyDisconnected(): LiveData<Boolean> = wasForciblyDisconnected
 
     override fun sendMessage(message: String) {
+        if (clientGatt == null) return
         Timber.d("Sending message: $message")
-        writeCharacteristic?.setValue("${Constants.TEXT_MESSAGE}${Repository.username}:\n${message}") ?:
-            Timber.d("sendMessage: clientCharacteristic is null!")
-        Timber.d("sendMessage: result=${clientGatt?.writeCharacteristic(writeCharacteristic)}")
+        writeCharacteristic?.value = "${Constants.TEXT_MESSAGE}${Repository.username}:\n${message}".toByteArray(Charsets.UTF_8)
+        Timber.d("Sending message result: ${clientGatt!!.writeCharacteristic(writeCharacteristic)}")
+    }
+
+    private fun sendOwnUsername() {
+        if (clientGatt == null) return
+        writeCharacteristic?.value = (Constants.USERNAME_MESSAGE + Repository.username).toByteArray(Charsets.UTF_8)
+        Timber.d("Sending username result: ${clientGatt!!.writeCharacteristic(writeCharacteristic)}")
     }
 
     override fun sendConnectionMessage(connected: Boolean) {
@@ -94,14 +111,40 @@ class Client(bluetoothAdapter : BluetoothAdapter, private val context : Context)
     }
 
     fun connect(position: Int) {
-        val device = foundChatRooms[position].device
-        with(foundChatRooms) {
-            for (possibleClient in this) this.remove(possibleClient)
-            foundChatRoomsLiveData.postValue(this)
-        }
-        Timber.d("Connecting to device with address: ${device.address}")
-        device.connectGatt(context, false, gattClientCallback)
+        val serverDevice = foundChatRooms[position].device
+//        with(foundChatRooms) {
+//            for (possibleClient in this) this.remove(possibleClient)
+//            foundChatRoomsLiveData.postValue(this)
+//        }
+        Timber.d("Connecting to device with address: ${serverDevice.address}")
+        serverDevice.connectGatt(context, false, gattClientCallback)
         scanner.stopScanning()
+    }
+
+    private fun dealWithTextMessage(message: String) {
+        lastMessage.postValue(message)
+    }
+
+    private fun dealWithConnectionMessage(message: String) {
+        lastConnectionMessage.postValue(message)
+    }
+
+    private fun dealWithForceDisconnectionMessage() {
+        disconnect(true)
+    }
+
+    private fun dealWithOtherMessage(message: String) {
+        Timber.d("Received unknown message: $message")
+    }
+
+    fun disconnect(forced: Boolean) {
+        Timber.d("Disconnecting... forced: $forced")
+        if (isConnected.value!!) {
+            clientGatt?.disconnect()
+            if (forced) wasForciblyDisconnected.postValue(true)
+            isConnected.postValue(false)
+            clientGatt?.close()
+        }
     }
 
     private fun enableIndication(gatt : BluetoothGatt) {
@@ -115,8 +158,10 @@ class Client(bluetoothAdapter : BluetoothAdapter, private val context : Context)
     
     init {
         scanner.getLastScanResult().observeForever {
-            if (!foundChatRooms.contains(it)) {
-                foundChatRooms.add(it)
+            val room = ChatRoom(it.device, it.scanRecord?.serviceData?.get(ParcelUuid(Constants.SERVICE_UUID))!!.toString(Charsets.UTF_8))
+            if (!foundChatRooms.contains(room)) {
+                Timber.d("New room added to list.")
+                foundChatRooms.add(room)
                 foundChatRoomsLiveData.postValue(foundChatRooms)
             }
         }
