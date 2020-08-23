@@ -3,6 +3,7 @@ package com.mygamecompany.kotlinchat.fragments
 import android.app.Activity
 import android.app.AlertDialog
 import android.os.Bundle
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,11 +17,10 @@ import com.mygamecompany.kotlinchat.data.Repository
 import com.mygamecompany.kotlinchat.databinding.FragmentChatBinding
 import com.mygamecompany.kotlinchat.utilities.MessageLayoutCreator
 import com.mygamecompany.kotlinchat.utilities.PermissionHandler
-import kotlinx.android.synthetic.main.fragment_chat.*
+import kotlinx.android.synthetic.main.fragment_chat.view.*
 import timber.log.Timber
 
-class ChatFragment : Fragment()
-{
+class ChatFragment : Fragment() {
     //VARIABLES
     private lateinit var binding: FragmentChatBinding
 
@@ -37,31 +37,32 @@ class ChatFragment : Fragment()
     }
 
     private fun setupObservers() {
-        with(binding.messageView) {
-            Repository.getLastMessage().observe(viewLifecycleOwner, Observer {
-                this.addView(MessageLayoutCreator.createMessage(it, false))
-            })
+        Repository.getLastMessage().observe(viewLifecycleOwner, Observer {
+            binding.messageView.addView(MessageLayoutCreator.createMessage(it, false))
+        })
 
-            Repository.getLastConnectionMessage().observe(viewLifecycleOwner, Observer {
-                this.addView(MessageLayoutCreator.createConnectionMessage(it))
-            })
+        Repository.getLastConnectionMessage().observe(viewLifecycleOwner, Observer {
+            binding.messageView.addView(MessageLayoutCreator.createConnectionMessage(it))
+        })
 
-            setOnClickListener {
-                val imm: InputMethodManager = requireActivity().getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
-                if (binding.inputText.hasFocus()) {
-                    imm.hideSoftInputFromWindow(binding.inputText.windowToken, 0)
-                    binding.inputText.clearFocus()
-                }
-            }
+        binding.messageView.setOnClickListener {
+            hideKeyboard()
+        }
+
+        binding.scrollView.setOnClickListener {
+            hideKeyboard()
         }
 
         binding.sendButton.setOnClickListener {
-            if (inputText.text != null && inputText.text.isNotEmpty()) {
-                val message = inputText.text.toString()
-                binding.messageView.addView(MessageLayoutCreator.createMessage(message, true))
-                Repository.sendMessage(message)
-                binding.inputText.text.clear()
-            }
+            val message = binding.inputText.text.toString()
+            Repository.sendMessage(message)
+            binding.scrollView.messageView.addView(MessageLayoutCreator.createMessage(message, true))
+            binding.inputText.text.clear()
+        }
+
+        binding.inputText.setOnKeyListener { _, keyCode, _ ->
+            if (keyCode == KeyEvent.KEYCODE_ENTER) hideKeyboard()
+            return@setOnKeyListener true
         }
 
         Repository.isConnectedToServer()?.observe(viewLifecycleOwner, Observer {
@@ -105,5 +106,11 @@ class ChatFragment : Fragment()
             }
             .create()
             .show()
+    }
+
+    private fun hideKeyboard() {
+        val imm: InputMethodManager = requireActivity().getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(binding.inputText.windowToken, 0)
+        binding.inputText.clearFocus()
     }
 }

@@ -57,6 +57,7 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:inputType="text"
+            android:gravity="bottom"
             app:layout_constraintTop_toBottomOf="@id/lowerGuideline"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/sendButton"
