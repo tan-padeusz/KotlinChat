@@ -56,9 +56,9 @@ class MenuFragment : Fragment() {
             searchRoom.setOnClickListener {
                 Timber.d("searchRoom: onClick:")
                 with(Repository) {
-                    runBluetoothDevice(false)
+                    stopBLEDevice()
                     isServer = false
-                    runBluetoothDevice(true)
+                    runBLEDevice()
                 }
                 findNavController().navigate(R.id.action_menuFragment_to_roomsFragment)
             }
@@ -66,9 +66,9 @@ class MenuFragment : Fragment() {
             startRoom.setOnClickListener {
                 Timber.d("startRoom: onClick:")
                 with(Repository) {
-                    runBluetoothDevice(false)
+                    stopBLEDevice()
                     isServer = true
-                    runBluetoothDevice(true)
+                    runBLEDevice()
                 }
                 findNavController().navigate(R.id.action_menuFragment_to_chatFragment)
             }

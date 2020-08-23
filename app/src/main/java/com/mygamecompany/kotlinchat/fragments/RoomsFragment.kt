@@ -26,14 +26,13 @@ class RoomsFragment : Fragment() {
     }
 
     private fun initializeComponentsAndObservers() {
-        val vm = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        val llm = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
         roomsAdapter = ChatRoomAdapter(ChatRoomClickListener { position ->
             roomOnClick(position)
-            findNavController().navigate(R.id.action_roomsFragment_to_chatFragment)
         })
 
         with(binding.roomsList) {
-            layoutManager = vm
+            layoutManager = llm
             adapter = roomsAdapter
         }
 
@@ -42,11 +41,15 @@ class RoomsFragment : Fragment() {
             roomsAdapter.notifyDataSetChanged()
         })
 
-        observePermissionHandlerStatus()
+        Repository.isConnectedToServer()?.observe(viewLifecycleOwner, Observer {
+            if (it) findNavController().navigate(R.id.action_roomsFragment_to_chatFragment)
+        })
 
         binding.backButton.setOnClickListener {
             findNavController().navigate(R.id.action_roomsFragment_to_menuFragment)
         }
+
+        observePermissionHandlerStatus()
     }
 
     private fun observePermissionHandlerStatus() {
