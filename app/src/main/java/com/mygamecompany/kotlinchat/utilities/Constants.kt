@@ -9,11 +9,7 @@ object Constants {
     val DESCRIPTOR_UUID: UUID = UUID.fromString("00002902-0000-1000-8000-00805F9B34FB")
 
     const val TEXT_MESSAGE: String = "#MSG#"
+    const val USERNAME_MESSAGE: String = "#URN#"
     const val CONNECTION_MESSAGE: String = "#CNC#"
-    const val USERNAME_MESSAGE: String = "#USN#"
     const val FORCE_DISCONNECTION_MESSAGE: String = "#FDC#"
-
-    const val OTHER_MESSAGE_STATUS: Int = -1
-    const val TEXT_MESSAGE_STATUS: Int = 0
-    const val CONNECTION_MESSAGE_STATUS: Int = 1
 }

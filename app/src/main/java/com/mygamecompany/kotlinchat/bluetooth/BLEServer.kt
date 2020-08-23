@@ -2,51 +2,52 @@ package com.mygamecompany.kotlinchat.bluetooth
 
 import android.bluetooth.*
 import android.content.Context
-import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.mygamecompany.kotlinchat.data.ConnectedDevice
 import com.mygamecompany.kotlinchat.data.Repository
-import com.mygamecompany.kotlinchat.interfaces.ChatDevice
+import com.mygamecompany.kotlinchat.interfaces.BLEDevice
 import com.mygamecompany.kotlinchat.utilities.*
 import timber.log.Timber
-import java.util.*
+import kotlin.collections.ArrayList
 
-class Server(bluetoothAdapter : BluetoothAdapter, private val context : Context): ChatDevice {
+class BLEServer(bluetoothAdapter : BluetoothAdapter, private val context : Context): BLEDevice {
     //SERVER CALLBACK
     private val gattServerCallback : BluetoothGattServerCallback = object : BluetoothGattServerCallback() {
         override fun onConnectionStateChange(device: BluetoothDevice?, status: Int, newState: Int) {
             super.onConnectionStateChange(device, status, newState)
+            val method = this::onConnectionStateChange.name
             when (newState) {
                 BluetoothProfile.STATE_CONNECTED -> {
-                    Timber.d("Connection state changed. Device at address (${device?.address}) has connected.")
-                    if(!connectedDevices.contains(device)) connectedDevices.add(device!!)
+                    Timber.d("$method: Connection state changed. Device at address (${device?.address}) has connected.")
                 }
                 BluetoothProfile.STATE_DISCONNECTED -> {
-                    Timber.d("Connection state changed. Device at address (${device?.address}) has disconnected.")
-                    connectedDevices.remove(device!!)
+                    Timber.d("$method: Connection state changed. Device at address (${device?.address}) has disconnected.")
+                    setAndSendConnectionMessage(device!!, false)
+                    connectedDevices.removeDevice(device)
                 }
-                else -> { Timber.d("Connection state changed. Device at address (${device?.address}) state unknown.") }
+                else -> { Timber.d("$method: Connection state changed. Device at address (${device?.address}) state unknown.") }
             }
         }
 
         override fun onCharacteristicWriteRequest(device: BluetoothDevice?, requestId: Int, characteristic: BluetoothGattCharacteristic?, preparedWrite: Boolean, responseNeeded: Boolean, offset: Int, value: ByteArray?) {
             super.onCharacteristicWriteRequest(device, requestId, characteristic, preparedWrite, responseNeeded, offset, value)
-            Timber.d("onCharacteristicWriteRequest:")
+            val method = this::onCharacteristicWriteRequest.name
+            Timber.d("$method:")
 
             if (value == null) return
             val receivedString = String(value, Charsets.UTF_8)
-            if (receivedString.length < 5) { Timber.d("Unknown message."); return; }
+            if (receivedString.length < 5) { Timber.d("$method: Unknown message."); return }
 
             val code = receivedString.take(5)
             val message = receivedString.drop(5)
             when(code) {
-                Constants.TEXT_MESSAGE -> dealWithTextMessage(message)
-                Constants.CONNECTION_MESSAGE -> dealWithConnectionMessage(message)
-                else -> dealWithOtherMessage(message)
+                Constants.TEXT_MESSAGE -> dealWithTextMessage(message, device!!)
+                Constants.USERNAME_MESSAGE -> dealWithUsernameMessage(message, device!!)
+                else -> dealWithOtherMessage(code, message)
             }
 
-            Timber.d("Write characteristic value changed. Code: $code. Message: $message")
-            passMessage(receivedString, device!!)
+            Timber.d("$method: Write characteristic value changed. Code: $code. Message: $message")
             if (responseNeeded) gattServer!!.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, null)
         }
 
@@ -64,7 +65,7 @@ class Server(bluetoothAdapter : BluetoothAdapter, private val context : Context)
 
     //VALUES
     private val advertiser: Advertiser = Advertiser(bluetoothAdapter)
-    private val connectedDevices: ArrayList<BluetoothDevice> = ArrayList()
+    private val connectedDevices: ArrayList<ConnectedDevice> = ArrayList()
     private val lastMessage: MutableLiveData<String> = MutableLiveData()
     private val lastConnectionMessage: MutableLiveData<String> = MutableLiveData()
 
@@ -72,40 +73,74 @@ class Server(bluetoothAdapter : BluetoothAdapter, private val context : Context)
     private var gattServer: BluetoothGattServer? = null
 
     //FUNCTIONS
-    override fun runBluetoothDevice(run: Boolean) = if (run) startServer() else stopServer()
-    override fun getLastMessage(): LiveData<String> = lastMessage
-    override fun getLastConnectionMessage(): LiveData<String> = lastConnectionMessage
+    override fun run() {
+        startServer()
+    }
+
+    override fun stop() {
+        stopServer()
+    }
+
+    override fun getLastMessage(): LiveData<String>{
+        return lastMessage
+    }
+
+    override fun getLastConnectionMessage(): LiveData<String> {
+        return lastConnectionMessage
+    }
 
     override fun sendMessage(message: String) {
         Timber.d("Sending message: $message.")
         val characteristic = gattServer!!.getService(Constants.SERVICE_UUID).getCharacteristic(Constants.READ_CHARACTERISTIC_UUID)
-        characteristic.value = "${Constants.TEXT_MESSAGE}${Repository.username}:\n${message}".toByteArray(Charsets.UTF_8)
-        for(device in connectedDevices) notifyDevice(device, characteristic)
+        characteristic.value = (Constants.TEXT_MESSAGE + Repository.username + ":\n" + message).toByteArray(Charsets.UTF_8)
+        for(client in connectedDevices) notifyDevice(client.device, characteristic)
     }
 
-    override fun sendConnectionMessage(connected: Boolean) {
-        TODO("Not implemented.")
-    }
-
-    private fun dealWithTextMessage(message: String): Int {
+    private fun dealWithTextMessage(message: String, sender: BluetoothDevice) {
         lastMessage.postValue(message)
-        return Constants.TEXT_MESSAGE_STATUS
+        passMessage(message, sender)
     }
 
-    private fun dealWithConnectionMessage(message: String): Int {
-        lastConnectionMessage.postValue(message)
-        return Constants.CONNECTION_MESSAGE_STATUS
+    private fun dealWithUsernameMessage(username: String, sender: BluetoothDevice) {
+        if (!connectedDevices.containsDevice(sender)) connectedDevices.add(ConnectedDevice(username, sender))
+        respondWithUsername(sender)
+        setAndSendConnectionMessage(sender, true)
     }
 
-    private fun dealWithOtherMessage(message: String): Int {
-        Timber.d("Received unknown message: $message")
-        return Constants.OTHER_MESSAGE_STATUS
+    private fun dealWithOtherMessage(code: String, message: String) {
+        Timber.d("Received other message ($code): $message.")
     }
 
     private fun passMessage(message: String, sender: BluetoothDevice) {
-        val readCharacteristic = gattServer!!.getService(Constants.SERVICE_UUID).getCharacteristic(Constants.READ_CHARACTERISTIC_UUID)
-        readCharacteristic.value = message.toByteArray(Charsets.UTF_8)
-        for (client in connectedDevices) if (client.address != sender.address) notifyDevice(client, readCharacteristic)
+        val characteristic = gattServer!!.getService(Constants.SERVICE_UUID).getCharacteristic(Constants.READ_CHARACTERISTIC_UUID)
+        characteristic.value = (Constants.TEXT_MESSAGE + message).toByteArray(Charsets.UTF_8)
+        for (client in connectedDevices) if (client.device != sender) notifyDevice(client.device, characteristic)
+    }
+
+    private fun respondWithUsername(sender: BluetoothDevice) {
+        Timber.d("Responding with own username...")
+        val characteristic = gattServer!!.getService(Constants.SERVICE_UUID).getCharacteristic(Constants.READ_CHARACTERISTIC_UUID)
+        characteristic.value = (Constants.CONNECTION_MESSAGE + " CONNECTED TO " + Repository.username).toByteArray(Charsets.UTF_8)
+        notifyDevice(sender, characteristic)
+    }
+
+    private fun setAndSendConnectionMessage(device: BluetoothDevice, connected: Boolean) {
+        val username = connectedDevices.getUsernameByDevice(device)
+        val message = if (connected) "$username HAS CONNECTED" else "$username HAS DISCONNECTED"
+        lastConnectionMessage.postValue(message)
+        val characteristic = gattServer!!.getService(Constants.SERVICE_UUID).getCharacteristic(Constants.READ_CHARACTERISTIC_UUID)
+        characteristic.value = (Constants.CONNECTION_MESSAGE + message).toByteArray(Charsets.UTF_8)
+        for (client in connectedDevices) if (client.device != device) notifyDevice(client.device, characteristic)
+    }
+
+    fun forceDisconnect() {
+        val characteristic = gattServer!!.getService(Constants.SERVICE_UUID).getCharacteristic(Constants.READ_CHARACTERISTIC_UUID)
+        characteristic.value = Constants.FORCE_DISCONNECTION_MESSAGE.toByteArray(Charsets.UTF_8)
+        for (client in connectedDevices) notifyDevice(client.device, characteristic)
+    }
+
+    private fun notifyDevice(client: BluetoothDevice, characteristic: BluetoothGattCharacteristic) {
+        Timber.d("Notify device result: ${gattServer!!.notifyCharacteristicChanged(client, characteristic, true)}")
     }
 
     private fun startServer() {
@@ -121,10 +156,8 @@ class Server(bluetoothAdapter : BluetoothAdapter, private val context : Context)
         if (gattServer != null) {
             Timber.d("Server stopped.")
             advertiser.stopAdvertising()
-            with(gattServer!!) {
-                clearServices()
-                close()
-            }
+            gattServer!!.clearServices()
+            gattServer!!.close()
             gattServer = null
         }
         else Timber.d("There is no need to stop server...")
@@ -155,9 +188,5 @@ class Server(bluetoothAdapter : BluetoothAdapter, private val context : Context)
             BluetoothGattCharacteristic.PROPERTY_WRITE,
             BluetoothGattCharacteristic.PERMISSION_WRITE
         )
-    }
-
-    private fun notifyDevice(client: BluetoothDevice, characteristic: BluetoothGattCharacteristic) {
-        gattServer!!.notifyCharacteristicChanged(client, characteristic, true)
     }
 }

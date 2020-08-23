@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Kotlin Chat</string>
 
     <!-- START FRAGMENT -->
@@ -26,8 +26,12 @@
     <string name="frooms_backText">BACK</string>
 
     <!-- CHAT ROOM -->
+    <string name="fchat_my_name_label_text">My name: %s</string>
     <string name="fchat_sendButtonText">=></string>
-    <string name="fchat_connection_message">has connected.</string>
-    <string name="fchat_disconnection_message">has disconnected.</string>
+    <string name="fchat_quit_dialog_message">Are you sure you want to quit chat?</string>
+    <string name="fchat_disconnect_dialog_message">You were disconnected from server.</string>
+    <string name="fchat_dialog_positive_button">YES</string>
+    <string name="fchat_dialog_ok_button">OK</string>
+    <string name="fchat_dialog_negative_button" tools:ignore="ButtonCase">CANCEL</string>
 
 </resources>

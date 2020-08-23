@@ -4,10 +4,10 @@
     <dimen name="greetings_text_size">24sp</dimen>
     <dimen name="info_text_size">16sp</dimen>
     <dimen name="button_text_size">16sp</dimen>
-    <dimen name="message_text_size">8sp</dimen>
+    <dimen name="message_text_size">4sp</dimen>
 
     <!-- MESSAGE -->
-    <dimen name="message_padding_horizontal">20dp</dimen>
+    <dimen name="message_padding_horizontal">16dp</dimen>
     <dimen name="message_padding_vertical">8dp</dimen>
     <dimen name="message_margin">12dp</dimen>
 

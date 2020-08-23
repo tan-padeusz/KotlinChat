@@ -50,7 +50,7 @@ class Scanner(private val bluetoothAdapter : BluetoothAdapter) {
             return
         }
         if (bluetoothAdapter.isEnabled) {
-            Timber.d(" createScanner: scanner created:")
+            Timber.d("createScanner: scanner created:")
             leScanner = bluetoothAdapter.bluetoothLeScanner
             Timber.d(if (leScanner != null) "Scanner created." else "Could not create scanner. LE scanning is not available.")
         }
@@ -58,31 +58,31 @@ class Scanner(private val bluetoothAdapter : BluetoothAdapter) {
     }
 
     private fun startScan() {
-        Timber.d(" startScanner:")
+        Timber.d("startScanner:")
         if (leScanner != null) {
             leScanner?.startScan(buildScanFilters(), buildScanSettings(), scanCallback)
-            Timber.d(" startScanner: scanning started:")
+            Timber.d("startScanner: scanning started:")
         }
-        else { Timber.d(" startScanner: LE scan not available:") }
+        else { Timber.d("startScanner: LE scan not available:") }
     }
 
     private fun stopScan() {
-        Timber.d(" stopScanner:")
+        Timber.d("stopScanner:")
         if (leScanner != null) {
-            Timber.d(" stopScanner: scanner stopped:")
+            Timber.d("stopScanner: scanner stopped:")
             leScanner?.stopScan(scanCallback)
         }
-        else { Timber.d(" stopScanner: no need to stop scanner:") }
+        else { Timber.d("stopScanner: no need to stop scanner:") }
     }
 
     fun startScanning() {
-        Timber.d(" startScanning:")
+        Timber.d("startScanning:")
         createScanner()
         startScan()
     }
 
     fun stopScanning() {
-        Timber.d(" stopScanning:")
+        Timber.d("stopScanning:")
         stopScan()
     }
 }
