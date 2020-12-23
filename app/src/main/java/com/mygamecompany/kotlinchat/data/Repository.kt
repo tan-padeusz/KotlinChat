@@ -53,9 +53,9 @@ object Repository {
     }
 
     /*CLIENT-ONLY METHOD*/
-    fun connectToServer(position: Int) {
+    fun connectToServer(room: ChatRoom) {
         if (isServer) { Timber.d("connectToServer: action available only for client."); return }
-        bleClient!!.connect(position)
+        bleClient!!.connect(room)
     }
 
     /*CLIENT-ONLY METHOD*/
