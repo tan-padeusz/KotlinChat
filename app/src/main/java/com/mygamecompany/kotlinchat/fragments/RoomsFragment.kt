@@ -7,13 +7,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.mygamecompany.kotlinchat.R
 import com.mygamecompany.kotlinchat.adapters.ChatRoomAdapter
-import com.mygamecompany.kotlinchat.adapters.ChatRoomClickListener
+import com.mygamecompany.kotlinchat.data.ChatRoom
 import com.mygamecompany.kotlinchat.data.Repository
 import com.mygamecompany.kotlinchat.databinding.FragmentRoomsBinding
 import com.mygamecompany.kotlinchat.utilities.PermissionHandler
+import timber.log.Timber
+import kotlin.collections.ArrayList
 
 class RoomsFragment : Fragment() {
     private lateinit var binding: FragmentRoomsBinding
@@ -25,20 +26,18 @@ class RoomsFragment : Fragment() {
         return binding.root
     }
 
-    private fun initializeComponentsAndObservers() {
-        val llm = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-        roomsAdapter = ChatRoomAdapter(ChatRoomClickListener { position ->
-            roomOnClick(position)
-        })
-
-        with(binding.roomsList) {
-            layoutManager = llm
+    private fun initializeComponentsAndObservers() {with(binding.roomsList) {
+            roomsAdapter = ChatRoomAdapter(requireContext(), ArrayList())
             adapter = roomsAdapter
+            setOnItemClickListener { _, _, position, _ ->
+                val item = getItemAtPosition(position) as ChatRoom
+                Timber.d("Clicked room name: ${item.roomName}")
+                Repository.connectToServer(item)
+            }
         }
 
-        Repository.getFoundChatRooms()?.observe(viewLifecycleOwner, Observer {
-            roomsAdapter.submitList(it)
-            roomsAdapter.notifyDataSetChanged()
+        Repository.getFoundChatRooms()?.observe(viewLifecycleOwner, Observer {roomsAdapter.clear()
+            roomsAdapter.addAll(it)
         })
 
         Repository.isConnectedToServer()?.observe(viewLifecycleOwner, Observer {
@@ -57,9 +56,5 @@ class RoomsFragment : Fragment() {
             val controller = findNavController()
             if (!it and (controller.currentDestination?.id != R.id.menuFragment)) PermissionHandler.showPermissionAlert(controller)
         })
-    }
-
-    private fun roomOnClick(position: Int) {
-        Repository.connectToServer(position)
     }
 }

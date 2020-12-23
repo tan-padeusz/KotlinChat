@@ -131,8 +131,8 @@ class BLEClient(bluetoothAdapter: BluetoothAdapter, private val context: Context
         Timber.d("Received unknown message: $message")
     }
 
-    fun connect(position: Int) {
-        val serverDevice = foundChatRooms[position].device
+    fun connect(room: ChatRoom) {
+        val serverDevice = room.device
         foundChatRooms.clear()
         Timber.d("Connecting to device with address: ${serverDevice.address}")
         serverDevice.connectGatt(context, false, gattClientCallback)
