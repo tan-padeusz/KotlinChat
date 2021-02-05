@@ -9,9 +9,12 @@ import com.mygamecompany.kotlinchat.data.Repository
 import com.mygamecompany.kotlinchat.interfaces.BLEDevice
 import com.mygamecompany.kotlinchat.utilities.*
 import timber.log.Timber
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.collections.ArrayList
 
-class BLEServer(bluetoothAdapter : BluetoothAdapter, private val context : Context): BLEDevice {
+@Singleton
+class BLEServer @Inject constructor (private val context : Context, private val advertiser: Advertiser): BLEDevice {
     //SERVER CALLBACK
     private val gattServerCallback : BluetoothGattServerCallback = object : BluetoothGattServerCallback() {
         override fun onConnectionStateChange(device: BluetoothDevice?, status: Int, newState: Int) {
@@ -64,7 +67,6 @@ class BLEServer(bluetoothAdapter : BluetoothAdapter, private val context : Conte
     }
 
     //VALUES
-    private val advertiser: Advertiser = Advertiser(bluetoothAdapter)
     private val connectedDevices: ArrayList<ConnectedDevice> = ArrayList()
     private val lastMessage: MutableLiveData<String> = MutableLiveData()
     private val lastConnectionMessage: MutableLiveData<String> = MutableLiveData()
@@ -91,8 +93,15 @@ class BLEServer(bluetoothAdapter : BluetoothAdapter, private val context : Conte
 
     override fun sendMessage(message: String) {
         Timber.d("Sending message: $message.")
-        val characteristic = gattServer!!.getService(Constants.SERVICE_UUID).getCharacteristic(Constants.READ_CHARACTERISTIC_UUID)
-        characteristic.value = (Constants.TEXT_MESSAGE + Repository.username + ":\n" + message).toByteArray(Charsets.UTF_8)
+        var characteristic: BluetoothGattCharacteristic? = null
+        try {
+            characteristic = gattServer!!.getService(Constants.SERVICE_UUID).getCharacteristic(Constants.READ_CHARACTERISTIC_UUID)
+        } catch (ex: KotlinNullPointerException) {
+            if (gattServer == null) Timber.d("Null gatt server @ sendMessage")
+            else if (gattServer!!.getService(Constants.SERVICE_UUID) == null) Timber.d("Null service @ sendMessage")
+            else Timber.d("Null characteristic @ sendMessage")
+        }
+        characteristic!!.value = (Constants.TEXT_MESSAGE + Repository.username + ":\n" + message).toByteArray(Charsets.UTF_8)
         for(client in connectedDevices) notifyDevice(client.device, characteristic)
     }
 
@@ -189,4 +198,6 @@ class BLEServer(bluetoothAdapter : BluetoothAdapter, private val context : Conte
             BluetoothGattCharacteristic.PERMISSION_WRITE
         )
     }
+
+    fun dummyMethod() {  }
 }

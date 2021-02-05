@@ -1,4 +1,4 @@
-package com.mygamecompany.kotlinchat
+package com.mygamecompany.kotlinchat.application
 
 import android.app.Application
 import com.mygamecompany.kotlinchat.log.DebugTree

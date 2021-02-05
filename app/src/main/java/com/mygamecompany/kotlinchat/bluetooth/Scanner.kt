@@ -7,8 +7,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.mygamecompany.kotlinchat.utilities.*
 import timber.log.Timber
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class Scanner(private val bluetoothAdapter : BluetoothAdapter) {
+@Singleton
+class Scanner @Inject constructor (private val bluetoothAdapter : BluetoothAdapter) {
     //SCAN CALLBACK
     private val scanCallback : ScanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult?) {
