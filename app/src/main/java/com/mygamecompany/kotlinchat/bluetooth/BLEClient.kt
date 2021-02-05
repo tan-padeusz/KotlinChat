@@ -10,8 +10,11 @@ import com.mygamecompany.kotlinchat.data.Repository
 import com.mygamecompany.kotlinchat.interfaces.BLEDevice
 import com.mygamecompany.kotlinchat.utilities.*
 import timber.log.Timber
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class BLEClient(bluetoothAdapter: BluetoothAdapter, private val context: Context): BLEDevice {
+@Singleton
+class BLEClient @Inject constructor (private val context: Context, private val scanner: Scanner): BLEDevice {
     //CLIENT CALLBACK
     private val gattClientCallback : BluetoothGattCallback = object : BluetoothGattCallback() {
         override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
@@ -70,7 +73,6 @@ class BLEClient(bluetoothAdapter: BluetoothAdapter, private val context: Context
     }
 
     //VALUES
-    private val scanner: Scanner = Scanner(bluetoothAdapter)
     private val lastMessage: MutableLiveData<String> = MutableLiveData()
     private val lastConnectionMessage: MutableLiveData<String> = MutableLiveData()
     private val foundChatRooms: ArrayList<ChatRoom> = ArrayList()

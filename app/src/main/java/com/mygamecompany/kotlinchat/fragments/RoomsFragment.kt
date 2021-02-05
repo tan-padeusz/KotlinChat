@@ -9,19 +9,24 @@ import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.mygamecompany.kotlinchat.R
 import com.mygamecompany.kotlinchat.adapters.ChatRoomAdapter
+import com.mygamecompany.kotlinchat.application.DaggerAppComponent
 import com.mygamecompany.kotlinchat.data.ChatRoom
-import com.mygamecompany.kotlinchat.data.Repository
 import com.mygamecompany.kotlinchat.databinding.FragmentRoomsBinding
 import com.mygamecompany.kotlinchat.utilities.PermissionHandler
+import com.mygamecompany.kotlinchat.viewmodels.RoomsViewModel
 import timber.log.Timber
+import javax.inject.Inject
 import kotlin.collections.ArrayList
 
 class RoomsFragment : Fragment() {
     private lateinit var binding: FragmentRoomsBinding
     private lateinit var roomsAdapter: ChatRoomAdapter
+    @Inject lateinit var roomsViewModel: RoomsViewModel
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle? ): View? {
         binding = FragmentRoomsBinding.inflate(inflater, container, false)
+        val components = DaggerAppComponent.factory().create(requireContext())
+        components.inject(this)
         initializeComponentsAndObservers()
         return binding.root
     }
@@ -32,15 +37,15 @@ class RoomsFragment : Fragment() {
             setOnItemClickListener { _, _, position, _ ->
                 val item = getItemAtPosition(position) as ChatRoom
                 Timber.d("Clicked room name: ${item.roomName}")
-                Repository.connectToServer(item)
+                roomsViewModel.connectToServer(item)
             }
         }
 
-        Repository.getFoundChatRooms()?.observe(viewLifecycleOwner, Observer {roomsAdapter.clear()
+        roomsViewModel.getFoundChatRooms()?.observe(viewLifecycleOwner, Observer {roomsAdapter.clear()
             roomsAdapter.addAll(it)
         })
 
-        Repository.isConnectedToServer()?.observe(viewLifecycleOwner, Observer {
+        roomsViewModel.isConnectedToServer()?.observe(viewLifecycleOwner, Observer {
             if (it) findNavController().navigate(R.id.action_roomsFragment_to_chatFragment)
         })
 

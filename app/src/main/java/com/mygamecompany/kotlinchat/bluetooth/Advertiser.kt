@@ -9,8 +9,11 @@ import android.os.ParcelUuid
 import com.mygamecompany.kotlinchat.data.Repository
 import com.mygamecompany.kotlinchat.utilities.Constants
 import timber.log.Timber
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class Advertiser(private val bluetoothAdapter: BluetoothAdapter) {
+@Singleton
+class Advertiser @Inject constructor (private val bluetoothAdapter: BluetoothAdapter) {
 
     //ADVERTISE CALLBACK
     private val advertiseCallback: AdvertiseCallback = object : AdvertiseCallback() {

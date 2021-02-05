@@ -13,16 +13,20 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.mygamecompany.kotlinchat.R
+import com.mygamecompany.kotlinchat.application.DaggerAppComponent
 import com.mygamecompany.kotlinchat.data.Repository
 import com.mygamecompany.kotlinchat.databinding.FragmentChatBinding
 import com.mygamecompany.kotlinchat.utilities.MessageLayoutCreator
 import com.mygamecompany.kotlinchat.utilities.PermissionHandler
+import com.mygamecompany.kotlinchat.viewmodels.ChatViewModel
 import kotlinx.android.synthetic.main.fragment_chat.view.*
 import timber.log.Timber
+import javax.inject.Inject
 
 class ChatFragment : Fragment() {
     //VARIABLES
     private lateinit var binding: FragmentChatBinding
+    @Inject lateinit var chatViewModel: ChatViewModel
 
     //FUNCTIONS
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -32,16 +36,19 @@ class ChatFragment : Fragment() {
             it.addressLabel.text = String.format(getString(R.string.fchat_my_name_label_text), Repository.username)
             it.addressLabel.visibility = View.VISIBLE
         }
+        val components = DaggerAppComponent.factory().create(requireContext())
+        components.inject(this)
+
         setupObservers()
         return binding.root
     }
 
     private fun setupObservers() {
-        Repository.getLastMessage().observe(viewLifecycleOwner, Observer {
+        chatViewModel.getLastMessage().observe(viewLifecycleOwner, Observer {
             binding.messageView.addView(MessageLayoutCreator.createMessage(it, false))
         })
 
-        Repository.getLastConnectionMessage().observe(viewLifecycleOwner, Observer {
+        chatViewModel.getLastConnectionMessage().observe(viewLifecycleOwner, Observer {
             binding.messageView.addView(MessageLayoutCreator.createConnectionMessage(it))
         })
 
@@ -55,7 +62,7 @@ class ChatFragment : Fragment() {
 
         binding.sendButton.setOnClickListener {
             val message = binding.inputText.text.toString()
-            Repository.sendMessage(message)
+            chatViewModel.sendMessage(message)
             binding.scrollView.messageView.addView(MessageLayoutCreator.createMessage(message, true))
             binding.inputText.text.clear()
         }
@@ -65,7 +72,7 @@ class ChatFragment : Fragment() {
             return@setOnKeyListener true
         }
 
-        Repository.isConnectedToServer()?.observe(viewLifecycleOwner, Observer {
+        chatViewModel.isConnectedToServer()?.observe(viewLifecycleOwner, Observer {
             if (!it) buildDisconnectAlertDialog()
         })
 
@@ -87,8 +94,8 @@ class ChatFragment : Fragment() {
         AlertDialog.Builder(requireContext())
             .setMessage(getString(R.string.fchat_quit_dialog_message))
             .setPositiveButton(getString(R.string.fchat_dialog_positive_button))  { _, _ ->
-                if (Repository.isServer) Repository.forceDisconnection()
-                else Repository.disconnectFromServer()
+                if (Repository.isServer) chatViewModel.forceDisconnection()
+                else chatViewModel.disconnectFromServer()
                 findNavController().navigate(R.id.action_chatFragment_to_menuFragment)
             }
             .setNegativeButton(getString(R.string.fchat_dialog_negative_button)) { dialog, _ ->

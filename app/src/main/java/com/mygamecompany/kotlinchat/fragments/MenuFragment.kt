@@ -1,6 +1,5 @@
 package com.mygamecompany.kotlinchat.fragments
 
-import android.bluetooth.BluetoothAdapter
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -11,19 +10,26 @@ import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.mygamecompany.kotlinchat.R
+import com.mygamecompany.kotlinchat.application.DaggerAppComponent
 import com.mygamecompany.kotlinchat.data.Repository
 import com.mygamecompany.kotlinchat.databinding.FragmentMenuBinding
 import com.mygamecompany.kotlinchat.utilities.MessageLayoutCreator
 import com.mygamecompany.kotlinchat.utilities.PermissionHandler
+import com.mygamecompany.kotlinchat.viewmodels.MenuViewModel
 import kotlinx.android.synthetic.main.fragment_menu.*
 import timber.log.Timber
+import javax.inject.Inject
 
 class MenuFragment : Fragment() {
     private lateinit var binding: FragmentMenuBinding
+    @Inject lateinit var menuViewModel: MenuViewModel
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = FragmentMenuBinding.inflate(inflater, container, false)
-        Repository.initializeBluetoothDevices(BluetoothAdapter.getDefaultAdapter(), requireContext())
+
+        val components = DaggerAppComponent.factory().create(requireContext())
+        components.inject(this)
+
         MessageLayoutCreator.initializeLayoutCreator(requireContext())
         setListeners()
         PermissionHandler.setFlags()
@@ -56,9 +62,9 @@ class MenuFragment : Fragment() {
             searchRoom.setOnClickListener {
                 Timber.d("searchRoom: onClick:")
                 with(Repository) {
-                    stopBLEDevice()
+                    menuViewModel.stopBLEDevice()
                     isServer = false
-                    runBLEDevice()
+                    menuViewModel.runBLEDevice()
                 }
                 findNavController().navigate(R.id.action_menuFragment_to_roomsFragment)
             }
@@ -66,9 +72,9 @@ class MenuFragment : Fragment() {
             startRoom.setOnClickListener {
                 Timber.d("startRoom: onClick:")
                 with(Repository) {
-                    stopBLEDevice()
+                    menuViewModel.stopBLEDevice()
                     isServer = true
-                    runBLEDevice()
+                    menuViewModel.runBLEDevice()
                 }
                 findNavController().navigate(R.id.action_menuFragment_to_chatFragment)
             }
