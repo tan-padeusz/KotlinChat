@@ -4,7 +4,8 @@
     <dimen name="greetings_text_size">24sp</dimen>
     <dimen name="info_text_size">16sp</dimen>
     <dimen name="button_text_size">16sp</dimen>
-    <dimen name="message_text_size">4sp</dimen>
+    <dimen name="message_text_size">8sp</dimen>
+    <dimen name="room_item_text_size">20sp</dimen>
 
     <!-- MESSAGE -->
     <dimen name="message_padding_horizontal">16dp</dimen>
